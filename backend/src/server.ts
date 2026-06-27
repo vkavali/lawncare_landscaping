@@ -1,12 +1,21 @@
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
 import {
+  buildQuoteIntro,
   collections,
   crews,
   extraOptions,
+  frequencyLabel,
   jobs,
   leads,
+  merchantProfile,
   recurringPlans,
+  quoteFallbackRecipient,
+  quoteFallbackZone,
+  quoteIncludesLabel,
+  quoteInvoicePrompt,
+  quoteNoExtrasLabel,
+  quotePaymentPrompt,
   scheduleSlots,
   serviceDefinitions,
   translateText,
@@ -15,18 +24,7 @@ import {
   type ServiceType,
   type Zone,
   zoneDefinitions,
-} from '../../src/data'
-import {
-  buildQuoteIntro,
-  frequencyLabel,
-  quoteFallbackRecipient,
-  quoteFallbackZone,
-  quoteIncludesLabel,
-  quoteInvoicePrompt,
-  quoteNoExtrasLabel,
-  quotePaymentPrompt,
-} from '../../src/i18n'
-import { merchantProfile } from '../../src/merchant'
+} from './demo-data'
 
 const app = express()
 const port = Number(process.env.PORT || 4000)
