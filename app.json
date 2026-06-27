@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Gutierrez Verde Ops",
+    "slug": "gutierrez-verde-ops",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.gutierrezverde.ops",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
+        "NSSpeechRecognitionUsageDescription": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts.",
+        "NSPhotoLibraryUsageDescription": "Allow Gutierrez Verde Ops to attach before-and-after job photos to service records.",
+        "NSPhotoLibraryAddUsageDescription": "Allow Gutierrez Verde Ops to save service evidence photos when needed."
+      }
+    },
+    "android": {
+      "package": "com.gutierrezverde.ops",
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
+          "speechRecognitionPermission": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts."
+        }
+      ]
+    ]
+  }
+}
