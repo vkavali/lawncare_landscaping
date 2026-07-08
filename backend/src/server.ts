@@ -1,6 +1,17 @@
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
+import path from 'path'
 import { authRouter } from './routes/auth.js'
+import { catalogRouter } from './routes/catalog.js'
+import { crewsRouter } from './routes/crews.js'
+import { customersRouter } from './routes/customers.js'
+import { estimatesRouter } from './routes/estimates.js'
+import { invoicesRouter } from './routes/invoices.js'
+import { jobsRouter } from './routes/jobs.js'
+import { leadsRouter } from './routes/leads.js'
+import { photosRouter } from './routes/photos.js'
+import { propertiesRouter } from './routes/properties.js'
+import { recurringPlansRouter } from './routes/recurringPlans.js'
 import {
   buildQuoteIntro,
   collections,
@@ -97,7 +108,18 @@ app.use(
   }),
 )
 app.use(express.json())
+app.use('/uploads', express.static(process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'uploads')))
 app.use('/auth', authRouter)
+app.use('/api/catalog', catalogRouter)
+app.use('/api/crews', crewsRouter)
+app.use('/api/customers', customersRouter)
+app.use('/api/estimates', estimatesRouter)
+app.use('/api/invoices', invoicesRouter)
+app.use('/api/jobs', jobsRouter)
+app.use('/api/leads', leadsRouter)
+app.use('/api/photos', photosRouter)
+app.use('/api/properties', propertiesRouter)
+app.use('/api/recurring-plans', recurringPlansRouter)
 
 function formatCurrency(value: number) {
   return currency.format(Math.round(value))
