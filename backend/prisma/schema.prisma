@@ -1,0 +1,451 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Tenancy ────────────────────────────────────────────────────────────────
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  tier        Tier     @default(FREE)
+  locale      String   @default("en-US")
+  currency    String   @default("USD")
+  timezone    String   @default("America/Chicago")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users         TenantUser[]
+  customers     Customer[]
+  properties    Property[]
+  serviceCatalog ServiceCatalogItem[]
+  crews         Crew[]
+  jobs          Job[]
+  estimates     Estimate[]
+  invoices      Invoice[]
+  payments      Payment[]
+  leads         Lead[]
+  recurringPlans RecurringPlan[]
+}
+
+enum Tier {
+  FREE
+  PRO
+  TEAM
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  googleId     String?  @unique
+  name         String
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenants TenantUser[]
+
+  @@index([email])
+}
+
+model TenantUser {
+  id       String   @id @default(cuid())
+  tenantId String
+  userId   String
+  role     Role     @default(CREW)
+  joinedAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+enum Role {
+  OWNER
+  CREW
+}
+
+// ─── CRM ────────────────────────────────────────────────────────────────────
+
+model Customer {
+  id           String   @id @default(cuid())
+  tenantId     String
+  name         String
+  phone        String?
+  email        String?
+  address      String?
+  city         String?
+  state        String   @default("TX")
+  zip          String?
+  notes        String?
+  needsInvoice Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  properties Property[]
+  jobs       Job[]
+  leads      Lead[]
+  invoices   Invoice[]
+
+  @@index([tenantId])
+}
+
+model Property {
+  id           String   @id @default(cuid())
+  tenantId     String
+  customerId   String
+  name         String?
+  address      String
+  city         String
+  state        String   @default("TX")
+  zip          String?
+  lotSizeSqft  Int?
+  gateCode     String?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  jobs     Job[]
+
+  @@index([tenantId])
+  @@index([customerId])
+}
+
+// ─── Service Catalog ────────────────────────────────────────────────────────
+
+model ServiceCatalogItem {
+  id          String   @id @default(cuid())
+  tenantId    String
+  name        String
+  nameEs      String?
+  description String?
+  unitPriceCents Int   @default(0)
+  durationMin Int?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  jobLines  JobLine[]
+  estimateLines EstimateLine[]
+
+  @@index([tenantId])
+}
+
+// ─── Crews ──────────────────────────────────────────────────────────────────
+
+model Crew {
+  id        String   @id @default(cuid())
+  tenantId  String
+  name      String
+  color     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members CrewMember[]
+  jobs    Job[]
+
+  @@index([tenantId])
+}
+
+model CrewMember {
+  id        String   @id @default(cuid())
+  crewId    String
+  userId    String?
+  name      String
+  role      String?
+  createdAt DateTime @default(now())
+
+  crew Crew @relation(fields: [crewId], references: [id], onDelete: Cascade)
+
+  @@index([crewId])
+}
+
+// ─── Jobs ───────────────────────────────────────────────────────────────────
+
+model Job {
+  id           String    @id @default(cuid())
+  tenantId     String
+  customerId   String?
+  propertyId   String?
+  crewId       String?
+  scheduledAt  DateTime
+  startedAt    DateTime?
+  completedAt  DateTime?
+  status       JobStatus @default(SCHEDULED)
+  totalCents   Int       @default(0)
+  paidCents    Int       @default(0)
+  paymentMethod PaymentMethod?
+  needsInvoice Boolean   @default(false)
+  rainSensitive Boolean  @default(false)
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer    Customer?        @relation(fields: [customerId], references: [id])
+  property    Property?        @relation(fields: [propertyId], references: [id])
+  crew        Crew?            @relation(fields: [crewId], references: [id])
+  lines       JobLine[]
+  statusEvents JobStatusEvent[]
+  photos      JobPhoto[]
+  invoices    Invoice[]
+
+  @@index([tenantId])
+  @@index([tenantId, scheduledAt])
+  @@index([crewId])
+}
+
+enum JobStatus {
+  SCHEDULED
+  EN_ROUTE
+  IN_PROGRESS
+  PENDING_PAYMENT
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  CHECK
+  VENMO
+  ZELLE
+  OTHER
+}
+
+model JobLine {
+  id          String  @id @default(cuid())
+  jobId       String
+  serviceId   String?
+  description String
+  descriptionEs String?
+  qty         Int     @default(1)
+  unitCents   Int     @default(0)
+  totalCents  Int     @default(0)
+
+  job     Job                 @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  service ServiceCatalogItem? @relation(fields: [serviceId], references: [id])
+
+  @@index([jobId])
+}
+
+model JobStatusEvent {
+  id        String    @id @default(cuid())
+  jobId     String
+  status    JobStatus
+  note      String?
+  createdAt DateTime  @default(now())
+  createdBy String?
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+model JobPhoto {
+  id        String    @id @default(cuid())
+  jobId     String
+  phase     PhotoPhase
+  url       String
+  filename  String?
+  sizeBytes Int?
+  createdAt DateTime  @default(now())
+  createdBy String?
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId])
+}
+
+enum PhotoPhase {
+  BEFORE
+  AFTER
+  PROGRESS
+}
+
+// ─── Estimates ──────────────────────────────────────────────────────────────
+
+model Estimate {
+  id           String         @id @default(cuid())
+  tenantId     String
+  customerId   String?
+  status       EstimateStatus @default(DRAFT)
+  totalCents   Int            @default(0)
+  depositCents Int            @default(0)
+  validUntil   DateTime?
+  notes        String?
+  sentAt       DateTime?
+  acceptedAt   DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  lines    EstimateLine[]
+  invoices Invoice[]
+
+  @@index([tenantId])
+}
+
+enum EstimateStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model EstimateLine {
+  id          String  @id @default(cuid())
+  estimateId  String
+  serviceId   String?
+  description String
+  descriptionEs String?
+  qty         Int     @default(1)
+  unitCents   Int     @default(0)
+  totalCents  Int     @default(0)
+
+  estimate Estimate            @relation(fields: [estimateId], references: [id], onDelete: Cascade)
+  service  ServiceCatalogItem? @relation(fields: [serviceId], references: [id])
+
+  @@index([estimateId])
+}
+
+// ─── Invoices & Payments ────────────────────────────────────────────────────
+
+model Invoice {
+  id           String        @id @default(cuid())
+  tenantId     String
+  customerId   String?
+  jobId        String?
+  estimateId   String?
+  status       InvoiceStatus @default(DRAFT)
+  number       String
+  totalCents   Int           @default(0)
+  paidCents    Int           @default(0)
+  dueCents     Int           @default(0)
+  dueDate      DateTime?
+  sentAt       DateTime?
+  paidAt       DateTime?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id])
+  job      Job?      @relation(fields: [jobId], references: [id])
+  estimate Estimate? @relation(fields: [estimateId], references: [id])
+  payments Payment[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId])
+  @@index([tenantId, status])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PARTIAL
+  PAID
+  OVERDUE
+  VOID
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  tenantId      String
+  invoiceId     String?
+  amountCents   Int
+  method        PaymentMethod
+  reference     String?
+  note          String?
+  paidAt        DateTime      @default(now())
+  createdAt     DateTime      @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+}
+
+// ─── CRM / Leads ────────────────────────────────────────────────────────────
+
+model Lead {
+  id          String    @id @default(cuid())
+  tenantId    String
+  customerId  String?
+  source      String?
+  service     String?
+  stage       LeadStage @default(NEW)
+  valueCents  Int       @default(0)
+  nextStep    String?
+  nextStepAt  DateTime?
+  notes       String?
+  wonAt       DateTime?
+  lostAt      DateTime?
+  lostReason  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  customer Customer? @relation(fields: [customerId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, stage])
+}
+
+enum LeadStage {
+  NEW
+  SITE_VISIT
+  PROPOSAL
+  DEPOSIT
+  WON
+  LOST
+}
+
+// ─── Recurring Plans ────────────────────────────────────────────────────────
+
+model RecurringPlan {
+  id          String          @id @default(cuid())
+  tenantId    String
+  customerId  String?
+  crewId      String?
+  service     String
+  frequency   PlanFrequency
+  dayOfWeek   Int?
+  timeOfDay   String?
+  priceCents  Int             @default(0)
+  active      Boolean         @default(true)
+  autopilot   Boolean         @default(true)
+  nextRunAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, active])
+}
+
+enum PlanFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  CUSTOM
+}
