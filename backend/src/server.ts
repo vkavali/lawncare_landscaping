@@ -11,6 +11,8 @@ import { jobsRouter } from './routes/jobs.js'
 import { leadsRouter } from './routes/leads.js'
 import { photosRouter } from './routes/photos.js'
 import { propertiesRouter } from './routes/properties.js'
+import { paymentsRouter } from './routes/payments.js'
+import { quoteRouter } from './routes/quote.js'
 import { recurringPlansRouter } from './routes/recurringPlans.js'
 import {
   buildQuoteIntro,
@@ -117,8 +119,10 @@ app.use('/api/estimates', estimatesRouter)
 app.use('/api/invoices', invoicesRouter)
 app.use('/api/jobs', jobsRouter)
 app.use('/api/leads', leadsRouter)
+app.use('/api/payments', paymentsRouter)
 app.use('/api/photos', photosRouter)
 app.use('/api/properties', propertiesRouter)
+app.use('/api/quote', quoteRouter)
 app.use('/api/recurring-plans', recurringPlansRouter)
 
 function formatCurrency(value: number) {

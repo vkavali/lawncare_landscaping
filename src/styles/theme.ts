@@ -17,3 +17,20 @@ export const palette = {
   white: '#ffffff',
   black: '#0e1512',
 }
+
+export const theme = {
+  background: palette.canvas,
+  surface: palette.card,
+  text: palette.ink,
+  textMuted: palette.muted,
+  textSubtle: palette.subtle,
+  border: palette.line,
+  green: palette.green,
+  greenLight: palette.greenSoft,
+  amber: palette.amber,
+  amberLight: palette.amberSoft,
+  red: palette.red,
+  redLight: palette.redSoft,
+  blue: palette.blue,
+  blueLight: palette.blueSoft,
+}

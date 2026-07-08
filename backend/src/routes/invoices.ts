@@ -1,91 +1,87 @@
-import { Router } from 'express'
+﻿import { Router, type Request, type Response } from 'express'
 import { z } from 'zod'
 import { prisma } from '../db.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { requireTenant, type TenantRequest } from '../middleware/requireTenant.js'
-import type { Request, Response } from 'express'
 
 export const invoicesRouter = Router()
 invoicesRouter.use(requireAuth, requireTenant)
 
-const PaymentSchema = z.object({
-  amountCents: z.number().int().min(1),
-  method: z.enum(['CASH', 'CARD', 'BANK_TRANSFER', 'CHECK', 'VENMO', 'ZELLE', 'OTHER']),
-  reference: z.string().max(100).optional(),
-  note: z.string().max(500).optional(),
+const InvoiceSchema = z.object({
+  customerId: z.string().cuid().optional(),
+  jobId: z.string().cuid().optional(),
+  estimateId: z.string().cuid().optional(),
+  number: z.string().min(1).max(50),
+  totalCents: z.number().int().nonnegative(),
+  dueCents: z.number().int().nonnegative().optional(),
+  dueDate: z.string().datetime().optional(),
+  notes: z.string().max(2000).optional(),
 })
-
-async function nextInvoiceNumber(tenantId: string) {
-  const last = await prisma.invoice.findFirst({
-    where: { tenantId },
-    orderBy: { createdAt: 'desc' },
-    select: { number: true },
-  })
-  const n = last ? parseInt(last.number.replace(/\D/g, '')) + 1 : 1001
-  return String(n)
-}
 
 invoicesRouter.get('/', async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
-  const { status } = req.query as Record<string, string | undefined>
+  const { status, customerId } = req.query as { status?: string; customerId?: string }
   const invoices = await prisma.invoice.findMany({
-    where: { tenantId, ...(status ? { status: status as 'DRAFT' } : {}) },
+    where: {
+      tenantId,
+      ...(status ? { status: status as any } : {}),
+      ...(customerId ? { customerId } : {}),
+    },
+    include: { payments: true },
     orderBy: { createdAt: 'desc' },
-    include: { customer: true, payments: true },
   })
-  res.json({ invoices })
+  res.json({ data: invoices })
+})
+
+invoicesRouter.post('/', async (req: Request, res: Response) => {
+  const { tenantId } = req as TenantRequest
+  const parsed = InvoiceSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }
+  const data = parsed.data
+  const invoice = await prisma.invoice.create({
+    data: {
+      tenantId,
+      ...data,
+      dueCents: data.dueCents ?? data.totalCents,
+      ...(data.dueDate ? { dueDate: new Date(data.dueDate) } : {}),
+    },
+  })
+  res.status(201).json({ data: invoice })
 })
 
 invoicesRouter.get('/:id', async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
   const invoice = await prisma.invoice.findFirst({
     where: { id: req.params.id, tenantId },
-    include: { customer: true, payments: true, job: true },
+    include: { payments: true },
   })
-  if (!invoice) { res.status(404).json({ error: 'Not found' }); return }
-  res.json({ invoice })
+  if (!invoice) { res.status(404).json({ error: 'Invoice not found' }); return }
+  res.json({ data: invoice })
 })
 
-invoicesRouter.post('/', async (req: Request, res: Response) => {
+invoicesRouter.patch('/:id', async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
-  const { customerId, jobId, estimateId, totalCents, dueDate, notes } = req.body as Record<string, unknown>
-  const number = await nextInvoiceNumber(tenantId)
-  const invoice = await prisma.invoice.create({
+  const existing = await prisma.invoice.findFirst({ where: { id: req.params.id, tenantId } })
+  if (!existing) { res.status(404).json({ error: 'Invoice not found' }); return }
+  const UpdateSchema = z.object({
+    status: z.enum(['DRAFT','SENT','PARTIAL','PAID','OVERDUE','VOID']).optional(),
+    paidCents: z.number().int().nonnegative().optional(),
+    dueDate: z.string().datetime().optional(),
+    notes: z.string().max(2000).optional(),
+    sentAt: z.string().datetime().optional(),
+    paidAt: z.string().datetime().optional(),
+  })
+  const parsed = UpdateSchema.safeParse(req.body)
+  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }
+  const data = parsed.data
+  const invoice = await prisma.invoice.update({
+    where: { id: req.params.id },
     data: {
-      tenantId,
-      number,
-      customerId: customerId as string | undefined,
-      jobId: jobId as string | undefined,
-      estimateId: estimateId as string | undefined,
-      totalCents: Number(totalCents ?? 0),
-      dueCents: Number(totalCents ?? 0),
-      dueDate: dueDate ? new Date(dueDate as string) : undefined,
-      notes: notes as string | undefined,
+      ...data,
+      ...(data.dueDate ? { dueDate: new Date(data.dueDate) } : {}),
+      ...(data.sentAt ? { sentAt: new Date(data.sentAt) } : {}),
+      ...(data.paidAt ? { paidAt: new Date(data.paidAt) } : {}),
     },
   })
-  res.status(201).json({ invoice })
-})
-
-invoicesRouter.post('/:id/payments', async (req: Request, res: Response) => {
-  const { tenantId } = req as TenantRequest
-  const parsed = PaymentSchema.safeParse(req.body)
-  if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }
-  const invoice = await prisma.invoice.findFirst({ where: { id: req.params.id, tenantId } })
-  if (!invoice) { res.status(404).json({ error: 'Not found' }); return }
-  const newPaid = invoice.paidCents + parsed.data.amountCents
-  const status =
-    newPaid >= invoice.totalCents ? 'PAID' : newPaid > 0 ? 'PARTIAL' : invoice.status
-  const [payment] = await prisma.$transaction([
-    prisma.payment.create({ data: { ...parsed.data, tenantId, invoiceId: invoice.id } }),
-    prisma.invoice.update({
-      where: { id: invoice.id },
-      data: {
-        paidCents: newPaid,
-        dueCents: Math.max(0, invoice.totalCents - newPaid),
-        status,
-        ...(status === 'PAID' ? { paidAt: new Date() } : {}),
-      },
-    }),
-  ])
-  res.status(201).json({ payment })
+  res.json({ data: invoice })
 })
