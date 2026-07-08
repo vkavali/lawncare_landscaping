@@ -32,18 +32,20 @@ function getToneForScheduleStatus(status: ScheduleSlot['status']) {
   }
 }
 
+type CalendarViewDay = {
+  id: string
+  shortLabel: { en: string; es: string }
+  dayLabel: { en: string; es: string }
+  dateLabel: { en: string; es: string }
+  weather: { en: string; es: string }
+  scheduledCount: number
+  busyCrews: number
+}
+
 interface AgendaScreenProps {
   language: Language
   copy: ReturnType<typeof getTranslation>
-  calendarView: Array<{
-    id: string
-    shortLabel: { en: string; es: string }
-    dayLabel: { en: string; es: string }
-    dateLabel: { en: string; es: string }
-    weather: { en: string; es: string }
-    scheduledCount: number
-    busyCrews: number
-  }>
+  calendarView: CalendarViewDay[]
   selectedDayId: string
   setSelectedDayId: (id: string) => void
   slotsForSelectedDay: ScheduleSlot[]
@@ -63,15 +65,7 @@ interface AgendaScreenProps {
   setScheduleFrequency: (v: Frequency) => void
   requiresInvoice: boolean
   setRequiresInvoice: (v: boolean) => void
-  selectedCalendarDay: {
-    id: string
-    shortLabel: { en: string; es: string }
-    dayLabel: { en: string; es: string }
-    dateLabel: { en: string; es: string }
-    weather: { en: string; es: string }
-    scheduledCount: number
-    busyCrews: number
-  } | undefined
+  selectedCalendarDay: CalendarViewDay | undefined
   selectedDayLabel: string
   scheduledDayLabel: string
   handleCreateSchedule: () => void

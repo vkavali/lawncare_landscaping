@@ -1,5 +1,6 @@
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
+import { authRouter } from './routes/auth.js'
 import {
   buildQuoteIntro,
   collections,
@@ -24,7 +25,7 @@ import {
   type ServiceType,
   type Zone,
   zoneDefinitions,
-} from './demo-data'
+} from './demo-data.js'
 
 const app = express()
 const port = Number(process.env.PORT || 4000)
@@ -96,6 +97,7 @@ app.use(
   }),
 )
 app.use(express.json())
+app.use('/auth', authRouter)
 
 function formatCurrency(value: number) {
   return currency.format(Math.round(value))

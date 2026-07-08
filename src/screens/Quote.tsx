@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Share, Switch, Text, TextInput, View } from 'rea
 import * as Clipboard from 'expo-clipboard'
 import { Alert } from 'react-native'
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition'
+import type { Dispatch, SetStateAction } from 'react'
 import { useState } from 'react'
 import { SectionCard } from '../components/SectionCard'
 import {
@@ -57,9 +58,9 @@ interface QuoteScreenProps {
   setRequiresInvoice: (v: boolean) => void
   selectedExtras: string[]
   quoteCustomSpanish: string
-  setQuoteCustomSpanish: (v: string) => void
+  setQuoteCustomSpanish: Dispatch<SetStateAction<string>>
   quoteCustomEnglish: string
-  setQuoteCustomEnglish: (v: string) => void
+  setQuoteCustomEnglish: Dispatch<SetStateAction<string>>
   handleExtraToggle: (extraId: string) => void
   openWhatsApp: (message: string) => void
 }

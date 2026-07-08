@@ -5,7 +5,10 @@ import { ProgressBar } from '../components/ProgressBar'
 import { SectionCard } from '../components/SectionCard'
 import { TonePill } from '../components/TonePill'
 import {
+  collections,
   crews,
+  leads,
+  quickTemplates,
   rainAlert,
   trackingPings,
   translateText,
@@ -17,7 +20,6 @@ import type { getTranslation } from '../i18n'
 import { unitLabel } from '../i18n'
 import styles from '../styles/shared'
 import { formatCurrency } from '../utils/format'
-import { quickTemplates } from '../data'
 
 function getToneForTrackingStatus(status: (typeof trackingPings)[number]['status']) {
   switch (status) {
@@ -46,9 +48,9 @@ export function TodayScreen({ language, crewMode, copy, liveJobs, setTab, openWh
   const atRiskByRain = liveJobs.filter(
     (job) => job.rainSensitive && job.status !== 'cerrado',
   ).length
-  const totalCollections = liveJobs.reduce((sum, job) => sum + job.amount, 0)
-  const invoiceCollections = liveJobs.filter((job) => job.invoice).length
-  const pipelineValue = liveJobs.reduce((sum, job) => sum + job.amount, 0)
+  const totalCollections = collections.reduce((sum, item) => sum + item.amount, 0)
+  const invoiceCollections = collections.filter((item) => item.invoice).length
+  const pipelineValue = leads.reduce((sum, lead) => sum + lead.value, 0)
 
   return (
     <>
