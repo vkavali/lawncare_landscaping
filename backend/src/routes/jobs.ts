@@ -7,8 +7,8 @@ import { requireAuth, type AuthedRequest } from '../middleware/requireAuth.js'
 import { requireTenant, requireOwner, type TenantRequest } from '../middleware/requireTenant.js'
 import { requireActivePlan } from '../middleware/requireActivePlan.js'
 import { sendSms } from '../services/twilio.js'
+import { getUploadPresignedUrl, isR2Configured } from '../services/storage.js'
 import {
-  jobScheduledSms,
   jobEnRouteSms,
   jobOnSiteSms,
   jobCompletedSms,
@@ -186,26 +186,84 @@ jobsRouter.post('/:id/status', async (req: Request, res: Response) => {
   }
 })
 
-// POST /api/jobs/:id/photos  — multipart upload (field: "photo", field: "phase")
-jobsRouter.post('/:id/photos', requireActivePlan, upload.single('photo'), async (req: Request, res: Response) => {
+// GET /api/jobs/:id/photos/upload-url — returns a presigned R2 PUT URL for direct mobile upload
+jobsRouter.get('/:id/photos/upload-url', requireActivePlan, async (req: Request, res: Response) => {
+  const { tenantId } = req as TenantRequest
+  const job = await prisma.job.findFirst({ where: { id: req.params.id, tenantId } })
+  if (!job) { res.status(404).json({ error: 'Job not found' }); return }
+
+  if (!isR2Configured()) {
+    res.status(503).json({ error: 'R2 storage not configured. Set R2_* env vars.' }); return
+  }
+
+  const { phase, filename, contentType } = req.query as {
+    phase?: string; filename?: string; contentType?: string
+  }
+  const phaseVal = z.enum(['BEFORE', 'AFTER', 'PROGRESS']).safeParse(phase)
+  if (!phaseVal.success) { res.status(400).json({ error: 'phase must be BEFORE, AFTER, or PROGRESS' }); return }
+
+  const ext = filename ? path.extname(filename as string) : '.jpg'
+  const key = `jobs/${req.params.id}/${phaseVal.data.toLowerCase()}/${Date.now()}${ext}`
+  const presignedUrl = await getUploadPresignedUrl(key, (contentType as string | undefined) ?? 'image/jpeg')
+  if (!presignedUrl) { res.status(500).json({ error: 'Failed to generate upload URL' }); return }
+
+  res.json({ upload_url: presignedUrl, key })
+})
+
+// POST /api/jobs/:id/photos  — register a photo after R2 upload OR disk upload (fallback)
+// If body contains { key, phase }: registers an R2-uploaded photo
+// If multipart form with file: legacy disk upload (fallback when R2 not configured)
+jobsRouter.post('/:id/photos', requireActivePlan, async (req: Request, res: Response, next) => {
   const { tenantId, userId } = req as TenantRequest & AuthedRequest
   const job = await prisma.job.findFirst({ where: { id: req.params.id, tenantId } })
   if (!job) { res.status(404).json({ error: 'Job not found' }); return }
-  if (!req.file) { res.status(400).json({ error: 'No file uploaded' }); return }
 
-  const phase = z.enum(['BEFORE', 'AFTER', 'PROGRESS']).safeParse(req.body.phase)
-  if (!phase.success) { res.status(400).json({ error: 'phase must be BEFORE, AFTER, or PROGRESS' }); return }
+  // R2 path: body has { key, phase, filename?, sizeBytes? }
+  if (req.body?.key) {
+    const schema = z.object({
+      key: z.string().min(1),
+      phase: z.enum(['BEFORE', 'AFTER', 'PROGRESS']),
+      filename: z.string().optional(),
+      sizeBytes: z.number().int().nonnegative().optional(),
+    })
+    const parsed = schema.safeParse(req.body)
+    if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }
 
-  const url = `${BACKEND_URL}/uploads/${path.basename(req.file.path)}`
-  const photo = await prisma.jobPhoto.create({
-    data: {
-      jobId: req.params.id,
-      phase: phase.data,
-      url,
-      filename: req.file.originalname,
-      sizeBytes: req.file.size,
-      createdBy: userId,
-    },
+    const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID ?? ''
+    const R2_BUCKET = process.env.R2_BUCKET ?? ''
+    const r2Url = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${R2_BUCKET}/${parsed.data.key}`
+
+    const photo = await prisma.jobPhoto.create({
+      data: {
+        jobId: req.params.id,
+        phase: parsed.data.phase,
+        url: r2Url,
+        filename: parsed.data.filename,
+        sizeBytes: parsed.data.sizeBytes,
+        createdBy: userId,
+      },
+    })
+    res.status(201).json({ data: photo })
+    return
+  }
+
+  // Disk fallback: parse multipart
+  upload.single('photo')(req, res, async (err) => {
+    if (err) { res.status(400).json({ error: err.message }); return }
+    if (!req.file) { res.status(400).json({ error: 'No file uploaded and no R2 key provided' }); return }
+    const phase = z.enum(['BEFORE', 'AFTER', 'PROGRESS']).safeParse(req.body.phase)
+    if (!phase.success) { res.status(400).json({ error: 'phase must be BEFORE, AFTER, or PROGRESS' }); return }
+    const url = `${BACKEND_URL}/uploads/${path.basename(req.file.path)}`
+    const photo = await prisma.jobPhoto.create({
+      data: {
+        jobId: req.params.id,
+        phase: phase.data,
+        url,
+        filename: req.file.originalname,
+        sizeBytes: req.file.size,
+        createdBy: userId,
+      },
+    })
+    res.status(201).json({ data: photo })
   })
-  res.status(201).json({ data: photo })
 })
