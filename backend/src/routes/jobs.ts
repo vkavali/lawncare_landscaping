@@ -6,6 +6,13 @@ import { prisma } from '../db.js'
 import { requireAuth, type AuthedRequest } from '../middleware/requireAuth.js'
 import { requireTenant, requireOwner, type TenantRequest } from '../middleware/requireTenant.js'
 import { requireActivePlan } from '../middleware/requireActivePlan.js'
+import { sendSms } from '../services/twilio.js'
+import {
+  jobScheduledSms,
+  jobEnRouteSms,
+  jobOnSiteSms,
+  jobCompletedSms,
+} from '../templates/sms.js'
 
 export const jobsRouter = Router()
 jobsRouter.use(requireAuth, requireTenant)
@@ -157,6 +164,26 @@ jobsRouter.post('/:id/status', async (req: Request, res: Response) => {
     prisma.jobStatusEvent.create({ data: { jobId: req.params.id, status: newStatus as any, note, createdBy: userId } }),
   ])
   res.json({ data: updated })
+
+  // Fire-and-forget SMS to customer on key status transitions
+  if (job.customerId && !cancel) {
+    try {
+      const customer = await prisma.customer.findUnique({
+        where: { id: job.customerId },
+        select: { phone: true, sms_opt_out: true, name: true },
+      })
+      if (customer?.phone && !customer.sms_opt_out) {
+        let smsBody: string | null = null
+        const lang = 'en' as const
+        if (newStatus === 'EN_ROUTE') smsBody = jobEnRouteSms(lang, customer.name)
+        else if (newStatus === 'IN_PROGRESS') smsBody = jobOnSiteSms(lang, customer.name)
+        else if (newStatus === 'COMPLETED') smsBody = jobCompletedSms(lang, customer.name)
+        if (smsBody) await sendSms(customer.phone, smsBody)
+      }
+    } catch (err) {
+      console.error('[SMS] Status notification failed:', err)
+    }
+  }
 })
 
 // POST /api/jobs/:id/photos  — multipart upload (field: "photo", field: "phase")

@@ -4,6 +4,11 @@ import { prisma } from '../db.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { requireTenant, type TenantRequest } from '../middleware/requireTenant.js'
 import { requireActivePlan } from '../middleware/requireActivePlan.js'
+import { sendEmail } from '../services/email.js'
+import { sendSms } from '../services/twilio.js'
+import { generatePdf } from '../services/pdf.js'
+import { estimateSentEmail } from '../templates/email.js'
+import { estimateSentSms } from '../templates/sms.js'
 
 export const estimatesRouter = Router()
 estimatesRouter.use(requireAuth, requireTenant)
@@ -88,17 +93,74 @@ estimatesRouter.patch('/:id', async (req: Request, res: Response) => {
   res.json({ data: estimate })
 })
 
-// POST /api/estimates/:id/send  — marks SENT + records sentAt
-estimatesRouter.post('/:id/send', async (req: Request, res: Response) => {
+// POST /api/estimates/:id/send  — marks SENT, emails PDF, SMS link
+estimatesRouter.post('/:id/send', requireActivePlan, async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
-  const existing = await prisma.estimate.findFirst({ where: { id: req.params.id, tenantId } })
+
+  const [existing, tenant] = await Promise.all([
+    prisma.estimate.findFirst({
+      where: { id: req.params.id, tenantId },
+      include: { lines: true, customer: { select: { name: true, email: true, phone: true, sms_opt_out: true, email_opt_out: true } } },
+    }),
+    prisma.tenant.findUnique({ where: { id: tenantId }, select: { name: true } }),
+  ])
+
   if (!existing) { res.status(404).json({ error: 'Estimate not found' }); return }
   if (existing.status !== 'DRAFT') {
     res.status(400).json({ error: `Estimate is already ${existing.status}` }); return
   }
+
   const estimate = await prisma.estimate.update({
     where: { id: req.params.id },
     data: { status: 'SENT', sentAt: new Date() },
   })
+
   res.json({ data: estimate })
+
+  // Fire-and-forget delivery
+  const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:8081'
+  const viewUrl = `${FRONTEND_URL}/estimates/${existing.id}`
+  const clientName = existing.customer?.name ?? 'Customer'
+  const businessName = tenant?.name ?? 'Verde Ops'
+  const totalFormatted = `$${(existing.totalCents / 100).toFixed(2)}`
+
+  try {
+    if (existing.customer?.email && !existing.customer.email_opt_out) {
+      const pdfBuffer = await generatePdf({
+        type: 'estimate',
+        number: existing.id.slice(-8).toUpperCase(),
+        businessName,
+        clientName,
+        clientEmail: existing.customer.email,
+        date: new Date(),
+        lines: existing.lines.map((l) => ({
+          description: l.description,
+          qty: l.qty,
+          unitCents: l.unitCents,
+          totalCents: l.totalCents,
+        })),
+        totalCents: existing.totalCents,
+        notes: existing.notes ?? undefined,
+      })
+      // Attach PDF via Resend attachments
+      const { Resend } = await import('resend')
+      const resend = new Resend(process.env.RESEND_API_KEY)
+      const FROM = process.env.EMAIL_FROM ?? 'Verde Ops <noreply@example.com>'
+      const { subject, html } = estimateSentEmail('en', clientName, businessName, totalFormatted, viewUrl)
+      await resend.emails.send({
+        from: FROM,
+        to: existing.customer.email,
+        subject,
+        html,
+        attachments: [{ filename: `estimate-${existing.id.slice(-8)}.pdf`, content: pdfBuffer }],
+      })
+    }
+
+    if (existing.customer?.phone && !existing.customer.sms_opt_out) {
+      const smsBody = estimateSentSms('en', clientName, existing.totalCents, viewUrl)
+      await sendSms(existing.customer.phone, smsBody)
+    }
+  } catch (err) {
+    console.error('[Estimate/send] Delivery error:', err)
+  }
 })

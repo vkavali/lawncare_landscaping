@@ -59,9 +59,23 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  tenants TenantUser[]
+  tenants             TenantUser[]
+  passwordResetTokens PasswordResetToken[]
 
   @@index([email])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
 }
 
 model TenantUser {
@@ -98,6 +112,8 @@ model Customer {
   zip          String?
   notes        String?
   needsInvoice Boolean  @default(false)
+  sms_opt_out  Boolean  @default(false)
+  email_opt_out Boolean @default(false)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
