@@ -115,6 +115,8 @@ app.use(
 app.use('/webhooks', express.raw({ type: '*/*' }), webhooksRouter)
 app.use(express.json())
 app.use('/uploads', express.static(process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'uploads')))
+// Marketing landing page: serve backend/public at the site root (index.html at "/")
+app.use(express.static(path.join(process.cwd(), 'public')))
 app.use('/auth', authRouter)
 app.use('/api/billing', billingRouter)
 app.use('/api/catalog', catalogRouter)
