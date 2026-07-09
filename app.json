@@ -36,7 +36,8 @@
           "microphonePermission": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
           "speechRecognitionPermission": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts."
         }
-      ]
+      ],
+      "@stripe/stripe-react-native"
     ]
   }
 }

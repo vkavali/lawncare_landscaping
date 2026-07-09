@@ -7,6 +7,7 @@ import { Alert, Linking, Pressable, ScrollView, Switch, Text, View } from 'react
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context'
 
 import { AgendaScreen } from './src/screens/Agenda'
+import { BillingScreen } from './src/screens/Billing'
 import { CollectionsScreen } from './src/screens/Collections'
 import { CrmScreen } from './src/screens/Crm'
 import { DemoScreen } from './src/screens/Demo'
@@ -400,6 +401,9 @@ export default function App() {
                 setInvoiceOnly={collectionsState.setInvoiceOnly}
                 openWhatsApp={openWhatsApp}
               />
+            ) : null}
+            {tab === 'billing' ? (
+              <BillingScreen language={language} />
             ) : null}
           </ScrollView>
 

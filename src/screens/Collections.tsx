@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Feather } from '@expo/vector-icons'
-import { Alert, Pressable, Switch, Text, View } from 'react-native'
+import { ActivityIndicator, Alert, Pressable, Switch, Text, View } from 'react-native'
 import { SectionCard } from '../components/SectionCard'
 import { TonePill } from '../components/TonePill'
 import {
@@ -11,7 +12,9 @@ import {
 } from '../data'
 import { buildCollectionReminderMessage, type getTranslation } from '../i18n'
 import styles from '../styles/shared'
+import { palette } from '../styles/theme'
 import { formatCurrency } from '../utils/format'
+import { apiFetch } from '../api/client'
 
 function getToneForRisk(risk: CollectionItem['risk']) {
   switch (risk) {
@@ -36,10 +39,60 @@ export function CollectionsScreen({
   setInvoiceOnly,
   openWhatsApp,
 }: CollectionsScreenProps) {
+  const [chargingId, setChargingId] = useState<string | null>(null)
+
   const filteredCollections = invoiceOnly
     ? collections.filter((item) => item.invoice)
     : collections
   const totalCollections = collections.reduce((sum, item) => sum + item.amount, 0)
+
+  async function handleChargeCard(item: CollectionItem) {
+    if (!item.invoice) {
+      Alert.alert(
+        language === 'es' ? 'Sin factura' : 'No invoice',
+        language === 'es'
+          ? 'Genera una factura primero para cobrar con tarjeta.'
+          : 'Create an invoice first to charge a card.',
+      )
+      return
+    }
+    Alert.alert(
+      language === 'es' ? 'Cobrar con tarjeta' : 'Charge card',
+      language === 'es'
+        ? `¿Cobrar ${formatCurrency(item.amount)} a ${item.client}?`
+        : `Charge ${formatCurrency(item.amount)} to ${item.client}?`,
+      [
+        { text: language === 'es' ? 'Cancelar' : 'Cancel', style: 'cancel' },
+        {
+          text: language === 'es' ? 'Cobrar' : 'Charge',
+          style: 'destructive',
+          onPress: async () => {
+            setChargingId(item.id)
+            try {
+              // item.id used as placeholder; in production pass real invoice_id
+              await apiFetch('/api/payments/intent', {
+                method: 'POST',
+                body: JSON.stringify({ invoice_id: item.id }),
+              })
+              Alert.alert(
+                language === 'es' ? '¡Cobro iniciado!' : 'Charge initiated',
+                language === 'es'
+                  ? 'Se está procesando el pago con tarjeta.'
+                  : 'Card payment is being processed.',
+              )
+            } catch (err) {
+              Alert.alert(
+                language === 'es' ? 'Error' : 'Error',
+                err instanceof Error ? err.message : 'Could not create payment intent.',
+              )
+            } finally {
+              setChargingId(null)
+            }
+          },
+        },
+      ],
+    )
+  }
 
   return (
     <>
@@ -107,6 +160,20 @@ export function CollectionsScreen({
               >
                 <Feather name="file-text" size={14} color="#17211b" />
                 <Text style={styles.smallActionText}>{copy.collections.invoiceChecklist}</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.smallAction, { backgroundColor: palette.greenSoft }]}
+                onPress={() => handleChargeCard(item)}
+                disabled={chargingId === item.id}
+              >
+                {chargingId === item.id ? (
+                  <ActivityIndicator size="small" color={palette.green} />
+                ) : (
+                  <Feather name="credit-card" size={14} color={palette.green} />
+                )}
+                <Text style={[styles.smallActionText, { color: palette.green }]}>
+                  {language === 'es' ? 'Cobrar' : 'Charge'}
+                </Text>
               </Pressable>
             </View>
           </View>

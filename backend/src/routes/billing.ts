@@ -131,6 +131,7 @@ billingRouter.get('/subscription', async (req: Request, res: Response) => {
     plan_status: tenant.plan_status,
     trial_ends_at: tenant.trial_ends_at,
     next_billing_date,
+    has_subscription: !!tenant.stripe_subscription_id,
   })
 })
 

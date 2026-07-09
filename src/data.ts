@@ -6,6 +6,7 @@ export type TabId =
   | 'cotizar'
   | 'crm'
   | 'cobranza'
+  | 'billing'
 export type Language = 'en' | 'es'
 export type ServiceType = 'mantenimiento' | 'paisajismo' | 'poda'
 export type Frequency = 'semanal' | 'quincenal' | 'mensual'
@@ -159,6 +160,7 @@ export const tabs: { id: TabId; label: LocalizedText; icon: string }[] = [
   { id: 'cotizar', label: lt('Quote', 'Cotizar'), icon: 'edit-3' },
   { id: 'crm', label: lt('CRM', 'CRM'), icon: 'users' },
   { id: 'cobranza', label: lt('Collections', 'Cobranza'), icon: 'credit-card' },
+  { id: 'billing', label: lt('Billing', 'Plan'), icon: 'star' },
 ]
 
 export const serviceDefinitions: ServiceDefinition[] = [
