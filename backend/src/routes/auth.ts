@@ -66,6 +66,8 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
 
   const uniqueSlug = `${slug}-${Math.random().toString(36).slice(2, 6)}`
 
+  const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+
   const user = await prisma.user.create({
     data: {
       name,
@@ -81,6 +83,8 @@ authRouter.post('/signup', async (req: Request, res: Response) => {
               tier: 'FREE',
               locale: 'en-US',
               currency: 'USD',
+              plan_status: 'trialing',
+              trial_ends_at: trialEndsAt,
             },
           },
         },
@@ -284,6 +288,7 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
         })
       } else {
         const slug = `${googlePayload.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40)}-${Math.random().toString(36).slice(2, 6)}`
+        const googleTrialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
         user = await prisma.user.create({
           data: {
             googleId: googlePayload.sub,
@@ -293,7 +298,17 @@ authRouter.get('/google/callback', async (req: Request, res: Response) => {
             tenants: {
               create: {
                 role: 'OWNER',
-                tenant: { create: { name: googlePayload.name, slug, tier: 'FREE', locale: 'en-US', currency: 'USD' } },
+                tenant: {
+                  create: {
+                    name: googlePayload.name,
+                    slug,
+                    tier: 'FREE',
+                    locale: 'en-US',
+                    currency: 'USD',
+                    plan_status: 'trialing',
+                    trial_ends_at: googleTrialEndsAt,
+                  },
+                },
               },
             },
           },

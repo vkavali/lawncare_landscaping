@@ -2,6 +2,7 @@ import cors from 'cors'
 import express, { type Request, type Response } from 'express'
 import path from 'path'
 import { authRouter } from './routes/auth.js'
+import { billingRouter } from './routes/billing.js'
 import { catalogRouter } from './routes/catalog.js'
 import { crewsRouter } from './routes/crews.js'
 import { customersRouter } from './routes/customers.js'
@@ -14,6 +15,7 @@ import { propertiesRouter } from './routes/properties.js'
 import { paymentsRouter } from './routes/payments.js'
 import { quoteRouter } from './routes/quote.js'
 import { recurringPlansRouter } from './routes/recurringPlans.js'
+import { webhooksRouter } from './routes/webhooks.js'
 import {
   buildQuoteIntro,
   collections,
@@ -109,9 +111,12 @@ app.use(
     origin: true,
   }),
 )
+// Webhooks must receive raw body for Stripe signature verification — mount before express.json()
+app.use('/webhooks', express.raw({ type: '*/*' }), webhooksRouter)
 app.use(express.json())
 app.use('/uploads', express.static(process.env.UPLOAD_DIR ?? path.join(process.cwd(), 'uploads')))
 app.use('/auth', authRouter)
+app.use('/api/billing', billingRouter)
 app.use('/api/catalog', catalogRouter)
 app.use('/api/crews', crewsRouter)
 app.use('/api/customers', customersRouter)

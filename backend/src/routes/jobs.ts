@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { prisma } from '../db.js'
 import { requireAuth, type AuthedRequest } from '../middleware/requireAuth.js'
 import { requireTenant, requireOwner, type TenantRequest } from '../middleware/requireTenant.js'
+import { requireActivePlan } from '../middleware/requireActivePlan.js'
 
 export const jobsRouter = Router()
 jobsRouter.use(requireAuth, requireTenant)
@@ -77,7 +78,7 @@ jobsRouter.get('/', async (req: Request, res: Response) => {
   res.json({ data: jobs })
 })
 
-jobsRouter.post('/', async (req: Request, res: Response) => {
+jobsRouter.post('/', requireActivePlan, async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
   const parsed = JobSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }
@@ -108,7 +109,7 @@ jobsRouter.get('/:id', async (req: Request, res: Response) => {
   res.json({ data: job })
 })
 
-jobsRouter.patch('/:id', async (req: Request, res: Response) => {
+jobsRouter.patch('/:id', requireActivePlan, async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
   const existing = await prisma.job.findFirst({ where: { id: req.params.id, tenantId } })
   if (!existing) { res.status(404).json({ error: 'Job not found' }); return }
@@ -126,7 +127,7 @@ jobsRouter.patch('/:id', async (req: Request, res: Response) => {
   res.json({ data: job })
 })
 
-jobsRouter.delete('/:id', requireOwner, async (req: Request, res: Response) => {
+jobsRouter.delete('/:id', requireOwner, requireActivePlan, async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
   const existing = await prisma.job.findFirst({ where: { id: req.params.id, tenantId } })
   if (!existing) { res.status(404).json({ error: 'Job not found' }); return }
@@ -159,7 +160,7 @@ jobsRouter.post('/:id/status', async (req: Request, res: Response) => {
 })
 
 // POST /api/jobs/:id/photos  — multipart upload (field: "photo", field: "phase")
-jobsRouter.post('/:id/photos', upload.single('photo'), async (req: Request, res: Response) => {
+jobsRouter.post('/:id/photos', requireActivePlan, upload.single('photo'), async (req: Request, res: Response) => {
   const { tenantId, userId } = req as TenantRequest & AuthedRequest
   const job = await prisma.job.findFirst({ where: { id: req.params.id, tenantId } })
   if (!job) { res.status(404).json({ error: 'Job not found' }); return }

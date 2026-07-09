@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '../db.js'
 import { requireAuth } from '../middleware/requireAuth.js'
 import { requireTenant, type TenantRequest } from '../middleware/requireTenant.js'
+import { requireActivePlan } from '../middleware/requireActivePlan.js'
 
 export const estimatesRouter = Router()
 estimatesRouter.use(requireAuth, requireTenant)
@@ -38,7 +39,7 @@ estimatesRouter.get('/', async (req: Request, res: Response) => {
   res.json({ data: estimates })
 })
 
-estimatesRouter.post('/', async (req: Request, res: Response) => {
+estimatesRouter.post('/', requireActivePlan, async (req: Request, res: Response) => {
   const { tenantId } = req as TenantRequest
   const parsed = EstimateSchema.safeParse(req.body)
   if (!parsed.success) { res.status(400).json({ error: parsed.error.flatten().fieldErrors }); return }

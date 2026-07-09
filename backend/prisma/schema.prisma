@@ -20,6 +20,16 @@ model Tenant {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Stripe SaaS billing (Chunk 1)
+  stripe_customer_id      String?
+  stripe_subscription_id  String?
+  plan_status             String    @default("trialing")
+  trial_ends_at           DateTime?
+
+  // Stripe Connect — owner-collected customer payments (Chunk 2)
+  stripe_connect_account_id   String?
+  stripe_connect_onboarded_at DateTime?
+
   users         TenantUser[]
   customers     Customer[]
   properties    Property[]
