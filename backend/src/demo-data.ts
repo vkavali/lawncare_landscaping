@@ -117,8 +117,8 @@ export function translateText(text: LocalizedText, language: Language) {
 }
 
 export const merchantProfile = {
-  businessName: 'Gutierrez Verde',
-  appName: 'Gutierrez Verde Ops',
+  businessName: 'Cuadrilla',
+  appName: 'Cuadrilla',
   ownerName: 'Juan Gutierrez',
   serviceArea: 'Monterrey, Nuevo Leon',
   serviceAreaShort: 'Monterrey, N.L.',
@@ -134,8 +134,8 @@ export const merchantProfile = {
     es: 'Cesped residencial',
   },
   quoteClosing: {
-    en: 'Handled by Juan Gutierrez · Gutierrez Verde · WhatsApp +52 81 0000 0000.',
-    es: 'Atiende Juan Gutierrez · Gutierrez Verde · WhatsApp +52 81 0000 0000.',
+    en: 'Handled by Juan Gutierrez · Cuadrilla · WhatsApp +52 81 0000 0000.',
+    es: 'Atiende Juan Gutierrez · Cuadrilla · WhatsApp +52 81 0000 0000.',
   },
 } as const
 
