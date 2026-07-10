@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Gutierrez Verde Ops",
-    "slug": "gutierrez-verde-ops",
+    "name": "Mowdeck",
+    "slug": "mowdeck",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -12,10 +12,10 @@
       "buildNumber": "3",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSMicrophoneUsageDescription": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
-        "NSSpeechRecognitionUsageDescription": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts.",
-        "NSPhotoLibraryUsageDescription": "Allow Gutierrez Verde Ops to attach before-and-after job photos to service records.",
-        "NSPhotoLibraryAddUsageDescription": "Allow Gutierrez Verde Ops to save service evidence photos when needed."
+        "NSMicrophoneUsageDescription": "Allow Mowdeck to use the microphone for Spanish dictation.",
+        "NSSpeechRecognitionUsageDescription": "Allow Mowdeck to convert speech into text for WhatsApp drafts.",
+        "NSPhotoLibraryUsageDescription": "Allow Mowdeck to attach before-and-after job photos to service records.",
+        "NSPhotoLibraryAddUsageDescription": "Allow Mowdeck to save service evidence photos when needed."
       }
     },
     "android": {
@@ -35,11 +35,17 @@
       [
         "expo-speech-recognition",
         {
-          "microphonePermission": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
-          "speechRecognitionPermission": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts."
+          "microphonePermission": "Allow Mowdeck to use the microphone for Spanish dictation.",
+          "speechRecognitionPermission": "Allow Mowdeck to convert speech into text for WhatsApp drafts."
         }
       ],
-      "@stripe/stripe-react-native"
+      [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.gutierrezverde.ops",
+          "enableGooglePay": false
+        }
+      ]
     ]
   }
 }
