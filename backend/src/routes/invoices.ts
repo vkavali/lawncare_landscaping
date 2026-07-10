@@ -96,7 +96,7 @@ invoicesRouter.post('/:id/send', requireActivePlan, async (req: Request, res: Re
   const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:8081'
   const viewUrl = `${FRONTEND_URL}/invoices/${existing.id}`
   const clientName = existing.customer?.name ?? 'Customer'
-  const businessName = tenant?.name ?? 'Verde Ops'
+  const businessName = tenant?.name ?? 'Cuadrilla'
   const totalFormatted = `$${(existing.totalCents / 100).toFixed(2)}`
   const dueDateFormatted = existing.dueDate
     ? existing.dueDate.toLocaleDateString('en-US')
@@ -118,7 +118,7 @@ invoicesRouter.post('/:id/send', requireActivePlan, async (req: Request, res: Re
       })
       const { Resend } = await import('resend')
       const resend = new Resend(process.env.RESEND_API_KEY)
-      const FROM = process.env.EMAIL_FROM ?? 'Verde Ops <noreply@example.com>'
+      const FROM = process.env.EMAIL_FROM ?? 'Cuadrilla <noreply@example.com>'
       const { subject, html } = invoiceSentEmail(
         'en', clientName, businessName, existing.number, totalFormatted, dueDateFormatted, viewUrl,
       )

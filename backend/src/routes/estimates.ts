@@ -121,7 +121,7 @@ estimatesRouter.post('/:id/send', requireActivePlan, async (req: Request, res: R
   const FRONTEND_URL = process.env.FRONTEND_URL ?? 'http://localhost:8081'
   const viewUrl = `${FRONTEND_URL}/estimates/${existing.id}`
   const clientName = existing.customer?.name ?? 'Customer'
-  const businessName = tenant?.name ?? 'Verde Ops'
+  const businessName = tenant?.name ?? 'Cuadrilla'
   const totalFormatted = `$${(existing.totalCents / 100).toFixed(2)}`
 
   try {
@@ -145,7 +145,7 @@ estimatesRouter.post('/:id/send', requireActivePlan, async (req: Request, res: R
       // Attach PDF via Resend attachments
       const { Resend } = await import('resend')
       const resend = new Resend(process.env.RESEND_API_KEY)
-      const FROM = process.env.EMAIL_FROM ?? 'Verde Ops <noreply@example.com>'
+      const FROM = process.env.EMAIL_FROM ?? 'Cuadrilla <noreply@example.com>'
       const { subject, html } = estimateSentEmail('en', clientName, businessName, totalFormatted, viewUrl)
       await resend.emails.send({
         from: FROM,
