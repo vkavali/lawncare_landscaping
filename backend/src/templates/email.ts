@@ -1,5 +1,5 @@
 const BRAND_COLOR = '#195847'
-const BRAND_NAME = 'Verde Ops'
+const BRAND_NAME = 'Cuadrilla'
 
 function layout(title: string, body: string): string {
   return `<!DOCTYPE html>

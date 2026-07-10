@@ -1,4 +1,4 @@
-const BRAND = 'Verde Ops'
+const BRAND = 'Cuadrilla'
 
 type Lang = 'en' | 'es'
 
