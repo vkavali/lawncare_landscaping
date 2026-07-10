@@ -9,7 +9,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.gutierrezverde.ops",
+      "buildNumber": "3",
       "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
         "NSMicrophoneUsageDescription": "Allow Gutierrez Verde Ops to use the microphone for Spanish dictation.",
         "NSSpeechRecognitionUsageDescription": "Allow Gutierrez Verde Ops to convert speech into text for WhatsApp drafts.",
         "NSPhotoLibraryUsageDescription": "Allow Gutierrez Verde Ops to attach before-and-after job photos to service records.",
