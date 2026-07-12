@@ -475,3 +475,33 @@ enum PlanFrequency {
   MONTHLY
   CUSTOM
 }
+
+// ─── Public quote-request inbox ─────────────────────────────────────────────
+//
+// A landscaper gets a short code and a public link (a QR sticker on the truck).
+// Homeowners fill in the form; the request lands here; the app pulls it down into
+// the owner's Leads. No account, no phone number, no per-message cost.
+
+model Inbox {
+  code         String   @id
+  businessName String
+  phone        String?
+  createdAt    DateTime @default(now())
+  requests     QuoteRequest[]
+}
+
+model QuoteRequest {
+  id         String   @id @default(cuid())
+  inboxCode  String
+  inbox      Inbox    @relation(fields: [inboxCode], references: [code], onDelete: Cascade)
+  name       String
+  phone      String
+  address    String   @default("")
+  service    String   @default("")
+  notes      String   @default("")
+  // Flipped once the owner's app has pulled it, so we never import a lead twice.
+  delivered  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([inboxCode, delivered])
+}
