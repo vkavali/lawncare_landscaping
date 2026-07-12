@@ -15,6 +15,8 @@ import { propertiesRouter } from './routes/properties.js'
 import { paymentsRouter } from './routes/payments.js'
 import { quoteRouter } from './routes/quote.js'
 import { recurringPlansRouter } from './routes/recurringPlans.js'
+import { inboxRouter } from './routes/inbox.js'
+import { translateRouter } from './routes/translate.js'
 import { webhooksRouter } from './routes/webhooks.js'
 import {
   buildQuoteIntro,
@@ -118,6 +120,10 @@ app.use('/uploads', express.static(process.env.UPLOAD_DIR ?? path.join(process.c
 // Marketing landing page: serve backend/public at the site root (index.html at "/")
 app.use(express.static(path.join(process.cwd(), 'public')))
 app.use('/auth', authRouter)
+app.use('/translate', translateRouter)
+app.use('/inbox', inboxRouter)
+// Short public link for the truck magnet: /q/<code>
+app.get('/q/:code', (req, res) => res.redirect(302, `/inbox/page/${req.params.code}`))
 app.use('/api/billing', billingRouter)
 app.use('/api/catalog', catalogRouter)
 app.use('/api/crews', crewsRouter)
