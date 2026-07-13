@@ -1,413 +1,285 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cuadrilla — Run your lawn care business from your phone</title>
-<meta name="description" content="Leads, quotes, crews, job photos, and collections — one bilingual app built for landscaping crews in the field." />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cuadrilla — Know which lawns actually pay you</title>
+<meta name="description" content="The lawn care app that tells you which accounts pay you badly, who is about to leave, and what work your customers already need. Built for crews that work in Spanish.">
 <style>
   :root{
-    --g900:#0f4d28;--g700:#166534;--g600:#1f7a3d;--g500:#30a554;--g400:#4fbf76;
-    --leaf:#e8f5d8;--cream:#f4f8f1;--ink:#12211a;--ink2:#3d5347;--line:#dce8d6;--white:#fff;--amber:#f4b942;
-    --shadow:0 20px 50px -20px rgba(15,77,40,.35);--shadow-sm:0 8px 24px -12px rgba(15,77,40,.30);--maxw:1160px;
+    --canvas:#f4f2eb; --card:#fbfaf6; --alt:#f3efe3; --ink:#17211b; --muted:#566257;
+    --subtle:#738171; --line:#ddd8cb; --green:#195847; --green-soft:#d9ece6;
+    --amber:#9a5c0f; --amber-soft:#f3e2cb;
+    color-scheme: light;
   }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);background:var(--cream);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-  h1,h2,h3{font-family:'Sora','Inter',sans-serif;line-height:1.08;letter-spacing:-.02em}
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
-  .btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;padding:14px 22px;border-radius:14px;border:1px solid transparent;cursor:pointer;transition:transform .18s,box-shadow .18s,background .18s;font-family:inherit}
-  .btn-primary{background:linear-gradient(135deg,var(--g600),var(--g500));color:#fff;box-shadow:var(--shadow-sm)}
-  .btn-primary:hover{transform:translateY(-2px)}
-  .btn-ghost{background:rgba(255,255,255,.7);color:var(--g900);border-color:var(--line)}
-  .btn-ghost:hover{background:#fff;transform:translateY(-2px)}
-  .eyebrow{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--g600);background:var(--leaf);padding:7px 14px;border-radius:999px}
-  section{padding:92px 0}
-  .sec-head{max-width:700px;margin:0 auto 52px;text-align:center}
-  .sec-head h2{font-size:clamp(28px,4vw,44px);font-weight:800;color:var(--g900);margin:16px 0 14px}
-  .sec-head p{font-size:18px;color:var(--ink2)}
-  header.nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);background:rgba(244,248,241,.82);border-bottom:1px solid rgba(220,232,214,.7)}
-  .nav-in{display:flex;align-items:center;justify-content:space-between;height:70px}
-  .brand{display:flex;align-items:center;gap:11px;font-family:'Sora';font-weight:800;font-size:19px;color:var(--g900)}
-  .brand .mark{width:36px;height:36px;border-radius:11px;background:linear-gradient(150deg,var(--g900),var(--g500));display:grid;place-items:center;box-shadow:var(--shadow-sm)}
-  .nav-actions{display:flex;align-items:center;gap:14px}
-  .langtoggle{display:inline-flex;background:var(--leaf);border-radius:999px;padding:4px;border:1px solid var(--line)}
-  .langtoggle button{border:none;background:transparent;font-weight:700;font-size:13px;color:var(--ink2);padding:6px 13px;border-radius:999px;cursor:pointer;font-family:inherit}
-  .langtoggle button.active{background:var(--g600);color:#fff}
-  .nav-links{display:flex;gap:26px;font-size:14.5px;font-weight:500;color:var(--ink2)}
-  @media(max-width:860px){.nav-links{display:none}}
-  .hero{position:relative;padding:66px 0 40px;overflow:hidden}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
-  .hero h1{font-size:clamp(34px,5.2vw,58px);font-weight:800;color:var(--g900)}
-  .hero h1 .hl{background:linear-gradient(120deg,var(--g500),var(--g400));-webkit-background-clip:text;background-clip:text;color:transparent}
-  .hero p.lead{font-size:clamp(17px,2.1vw,20px);color:var(--ink2);margin:22px 0 30px;max-width:540px}
-  .hero-cta{display:flex;gap:14px;flex-wrap:wrap}
-  .hero-trust{display:flex;align-items:center;gap:16px;margin-top:26px;font-size:13.5px;color:var(--ink2);flex-wrap:wrap}
-  .hero-trust .dot{width:6px;height:6px;border-radius:50%;background:var(--g400)}
-  .blob{position:absolute;border-radius:50%;filter:blur(60px);opacity:.5;z-index:-1}
-  .blob.a{width:420px;height:420px;background:#bfe6c8;top:-120px;right:-80px}
-  .blob.b{width:340px;height:340px;background:#e9f2c9;bottom:-120px;left:-100px}
-  @media(max-width:860px){.hero-grid{grid-template-columns:1fr;text-align:center}.hero p.lead{margin-inline:auto}.hero-cta,.hero-trust{justify-content:center}}
-  .phone{position:relative;width:300px;margin:0 auto;aspect-ratio:300/610;background:#0e1a13;border-radius:42px;padding:11px;box-shadow:0 40px 80px -30px rgba(15,77,40,.55),0 0 0 1px rgba(0,0,0,.06)}
-  .phone .screen{width:100%;height:100%;background:var(--cream);border-radius:32px;overflow:hidden;display:flex;flex-direction:column}
-  .phone .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:26px;background:#0e1a13;border-radius:0 0 16px 16px;z-index:3}
-  .ph-top{background:linear-gradient(135deg,var(--g900),var(--g600));color:#fff;padding:34px 18px 16px}
-  .ph-top .h{font-family:'Sora';font-weight:700;font-size:17px}
-  .ph-top .s{font-size:11px;opacity:.85;margin-top:2px}
-  .ph-body{flex:1;padding:14px;display:flex;flex-direction:column;gap:10px;overflow:hidden}
-  .ph-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:11px 12px;box-shadow:0 4px 12px -8px rgba(15,77,40,.3)}
-  .ph-card .row{display:flex;justify-content:space-between;align-items:center}
-  .ph-card .t{font-weight:700;font-size:12.5px;color:var(--ink)}
-  .ph-card .m{font-size:10.5px;color:var(--ink2);margin-top:2px}
-  .stat-row{display:flex;gap:8px}
-  .stat-mini{flex:1;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px;text-align:center}
-  .stat-mini .n{font-family:'Sora';font-weight:800;font-size:15px;color:var(--g600)}
-  .stat-mini .l{font-size:8.5px;color:var(--ink2)}
-  .pill{font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px}
-  .pill.g{background:var(--leaf);color:var(--g700)}
-  .pill.a{background:#fdf1d6;color:#9a6a13}
-  .pill.b{background:#e4eefb;color:#2c5aa0}
-  .ph-tabs{display:flex;justify-content:space-around;padding:9px 4px;border-top:1px solid var(--line);background:#fff}
-  .ph-tabs span{font-size:8px;color:var(--ink2);display:flex;flex-direction:column;align-items:center;gap:3px}
-  .ph-tabs .ic{width:15px;height:15px;border-radius:5px;background:var(--leaf)}
-  .ph-tabs .on .ic{background:var(--g500)}
-  .ph-tabs .on{color:var(--g700);font-weight:700}
-  .float-chip{position:absolute;background:#fff;border:1px solid var(--line);border-radius:13px;padding:9px 13px;box-shadow:var(--shadow);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:8px}
-  .float-chip .ico{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:13px}
-  .fc1{top:56px;left:-38px}.fc2{bottom:150px;right:-46px}.fc3{bottom:30px;left:-30px}
-  @media(max-width:520px){.float-chip{display:none}}
-  .problem{background:linear-gradient(180deg,var(--cream),#fff)}
-  .pain-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-  .pain{background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;transition:transform .2s,box-shadow .2s}
-  .pain:hover{transform:translateY(-4px);box-shadow:var(--shadow-sm)}
-  .pain .ic{width:44px;height:44px;border-radius:12px;background:#fdecec;display:grid;place-items:center;font-size:21px;margin-bottom:14px}
-  .pain h3{font-size:17px;font-weight:700;color:var(--g900);margin-bottom:7px}
-  .pain p{font-size:14.5px;color:var(--ink2)}
-  .step{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;margin-bottom:44px}
-  .step:nth-child(even) .step-media{order:-1}
-  .step-num{width:40px;height:40px;border-radius:12px;background:var(--g900);color:#fff;display:grid;place-items:center;font-family:'Sora';font-weight:800;font-size:18px;margin-bottom:16px}
-  .step h3{font-size:clamp(22px,2.6vw,28px);font-weight:800;color:var(--g900);margin-bottom:12px}
-  .step p{font-size:16px;color:var(--ink2);max-width:440px}
-  .step ul{list-style:none;margin-top:16px;display:flex;flex-direction:column;gap:9px}
-  .step ul li{display:flex;gap:10px;font-size:14.5px;color:var(--ink)}
-  .step ul li::before{content:"✓";color:var(--g500);font-weight:800}
-  .step-media{display:flex;justify-content:center}
-  @media(max-width:860px){.step{grid-template-columns:1fr;gap:28px}.step:nth-child(even) .step-media{order:0}}
-  .features{background:var(--g900);color:#fff;border-radius:40px 40px 0 0}
-  .features .sec-head h2{color:#fff}.features .sec-head p{color:#c9e6d2}
-  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-  .feat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:24px;transition:background .2s,transform .2s}
-  .feat:hover{background:rgba(255,255,255,.1);transform:translateY(-4px)}
-  .feat .ic{width:46px;height:46px;border-radius:12px;background:linear-gradient(140deg,var(--g500),var(--g400));display:grid;place-items:center;font-size:22px;margin-bottom:15px}
-  .feat h3{font-size:17px;font-weight:700;margin-bottom:7px}
-  .feat p{font-size:14px;color:#bfe0c9}
-  .grow .sec-head h2{color:var(--g900)}
-  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
-  .stat{background:linear-gradient(160deg,#fff,var(--cream));border:1px solid var(--line);border-radius:20px;padding:30px 26px;text-align:center}
-  .stat .n{font-family:'Sora';font-weight:800;font-size:40px;color:var(--g600);line-height:1}
-  .stat .l{font-size:15px;color:var(--ink2);margin-top:10px}
-  .bili{background:linear-gradient(135deg,var(--g600),var(--g500));color:#fff;border-radius:28px;padding:52px;display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:center;box-shadow:var(--shadow)}
-  .bili h2{font-size:clamp(26px,3.2vw,36px);font-weight:800}
-  .bili p{font-size:17px;color:#e9f7ee;margin-top:14px}
-  .bili .demo-bubble{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:16px;font-size:14px;margin-top:12px}
-  @media(max-width:760px){.bili{grid-template-columns:1fr;padding:34px}}
-  .cta{text-align:center}
-  .cta-box{background:var(--g900);color:#fff;border-radius:32px;padding:60px 32px;position:relative;overflow:hidden}
-  .cta-box h2{font-size:clamp(28px,4vw,42px);font-weight:800;margin-bottom:14px}
-  .cta-box p{font-size:18px;color:#c9e6d2;max-width:520px;margin:0 auto 28px}
-  .cta-box .btn-primary{background:#fff;color:var(--g900)}.cta-box .blob{opacity:.28}
-  footer{padding:44px 0;text-align:center;color:var(--ink2);font-size:14px}
-  footer .brand{justify-content:center;margin-bottom:12px}
-  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
-  .reveal.in{opacity:1;transform:none}
-  .leaf-svg{width:20px;height:20px}
+  *{box-sizing:border-box; margin:0; padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--canvas); color:var(--ink); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 22px}
+
+  header{padding:22px 0; display:flex; align-items:center; justify-content:space-between}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px}
+  .mark{width:36px;height:36px;border-radius:11px;background:var(--green-soft);
+        display:grid;place-items:center;font-size:18px}
+  .lang{display:flex; gap:4px; background:var(--alt); padding:4px; border-radius:10px}
+  .lang button{border:0; background:transparent; font:inherit; font-weight:700; font-size:13px;
+    color:var(--muted); padding:7px 12px; border-radius:7px; cursor:pointer}
+  .lang button.on{background:var(--green); color:#fff}
+
+  .hero{padding:56px 0 40px; max-width:780px}
+  .eyebrow{display:inline-block; background:var(--green-soft); color:var(--green);
+    font-weight:800; font-size:12px; letter-spacing:.09em; text-transform:uppercase;
+    padding:7px 12px; border-radius:999px; margin-bottom:20px}
+  h1{font-size:52px; line-height:1.08; letter-spacing:-1.2px; margin-bottom:18px}
+  h1 em{font-style:normal; color:var(--green)}
+  .sub{font-size:19px; color:var(--muted); max-width:640px}
+  .cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:28px}
+  .btn{display:inline-block; padding:15px 24px; border-radius:12px; font-weight:800;
+    text-decoration:none; font-size:15px}
+  .btn-primary{background:var(--green); color:#fff}
+  .btn-ghost{background:var(--card); color:var(--ink); border:1px solid var(--line)}
+  .note{font-size:13.5px; color:var(--subtle); margin-top:14px}
+
+  section{padding:56px 0; border-top:1px solid var(--line)}
+  h2{font-size:34px; letter-spacing:-.6px; margin-bottom:10px}
+  .lede{font-size:17px; color:var(--muted); max-width:660px; margin-bottom:34px}
+
+  .truth{background:var(--ink); color:#e9ece9; border-radius:20px; padding:36px}
+  .truth h2{color:#fff}
+  .truth .lede{color:#b8c2ba}
+  .numbers{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:18px; margin-top:26px}
+  .num{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+    border-radius:14px; padding:18px}
+  .num .big{font-size:30px; font-weight:800; color:#2fd06a; letter-spacing:-.5px}
+  .num .cap{font-size:13.5px; color:#b8c2ba; margin-top:5px; line-height:1.45}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:18px}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:16px; padding:22px}
+  .card .ico{width:40px;height:40px;border-radius:12px;background:var(--green-soft);
+    display:grid;place-items:center;font-size:19px;margin-bottom:14px}
+  .card h3{font-size:18px; margin-bottom:7px}
+  .card p{font-size:14.5px; color:var(--muted)}
+  .card .kicker{font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.07em;
+    color:var(--green); margin-bottom:8px}
+
+  .steps{counter-reset:s; display:grid; gap:14px}
+  .step{display:flex; gap:16px; background:var(--card); border:1px solid var(--line);
+    border-radius:14px; padding:20px}
+  .step .n{counter-increment:s; flex:0 0 34px; height:34px; border-radius:10px;
+    background:var(--green); color:#fff; font-weight:800; display:grid; place-items:center}
+  .step .n::before{content:counter(s)}
+  .step h3{font-size:16.5px; margin-bottom:4px}
+  .step p{font-size:14.5px; color:var(--muted)}
+
+  .honest{background:var(--amber-soft); border:1px solid var(--amber); border-radius:16px; padding:24px}
+  .honest h3{font-size:18px; color:var(--amber); margin-bottom:8px}
+  .honest p{font-size:14.5px; color:#5c4a2e}
+
+  .spanish{background:var(--green); color:#fff; border-radius:20px; padding:36px}
+  .spanish h2{color:#fff}
+  .spanish p{color:#cfe3da; font-size:17px; max-width:640px}
+  .quote-es{background:rgba(255,255,255,.10); border-radius:14px; padding:18px; margin-top:20px;
+    font-size:16px; color:#eaf4ee; line-height:1.6}
+
+  footer{padding:40px 0 60px; color:var(--subtle); font-size:13.5px; border-top:1px solid var(--line)}
+
+  @media (max-width:640px){
+    h1{font-size:36px}
+    h2{font-size:27px}
+    .truth,.spanish{padding:24px}
+  }
 </style>
 </head>
 <body>
+<div class="wrap">
 
-<header class="nav">
-  <div class="wrap nav-in">
-    <div class="brand">
-      <span class="mark"><svg class="leaf-svg" viewBox="0 0 24 24" fill="none"><path d="M12 21c6-2 8-8 8-15-7 0-13 3-13 10 0 2 .6 3.6 1.4 4.7L6 21" stroke="#e8f5d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 17c1.5-3 4-5 7-6" stroke="#e8f5d8" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-      Cuadrilla
+  <header>
+    <div class="brand"><span class="mark">🌿</span> Cuadrilla</div>
+    <div class="lang">
+      <button id="btn-en" class="on" onclick="setLang('en')">EN</button>
+      <button id="btn-es" onclick="setLang('es')">ES</button>
     </div>
-    <nav class="nav-links">
-      <a href="#how" data-en="How it works" data-es="Cómo funciona">How it works</a>
-      <a href="#features" data-en="Features" data-es="Funciones">Features</a>
-      <a href="#grow" data-en="Grow" data-es="Crecer">Grow</a>
-    </nav>
-    <div class="nav-actions">
-      <div class="langtoggle" role="group" aria-label="Language">
-        <button data-lang="en" class="active">EN</button>
-        <button data-lang="es">ES</button>
-      </div>
-      <a class="btn btn-primary" href="#cta" data-en="Get the app" data-es="Descargar">Get the app</a>
+  </header>
+
+  <div class="hero">
+    <span class="eyebrow" data-en="For lawn &amp; landscape crews" data-es="Para cuadrillas de jardineria">For lawn &amp; landscape crews</span>
+    <h1 data-en="You know what you <em>charge</em>. You don't know what you <em>earn</em>."
+        data-es="Sabes lo que <em>cobras</em>. No sabes lo que <em>ganas</em>.">
+        You know what you <em>charge</em>. You don't know what you <em>earn</em>.</h1>
+    <p class="sub"
+       data-en="Cuadrilla runs your day — quotes, crews, jobs, photos, collections. Then it tells you the three things no other app will: which accounts pay you badly, which customers are about to leave, and how much work your existing customers already need and were never offered."
+       data-es="Cuadrilla te maneja el dia — cotizaciones, cuadrillas, trabajos, fotos, cobranza. Y despues te dice las tres cosas que ninguna otra app te dice: que cuentas te pagan mal, que clientes se te van a ir, y cuanto trabajo necesitan tus clientes actuales que nunca les ofreciste.">
+      Cuadrilla runs your day — quotes, crews, jobs, photos, collections. Then it tells you the three things no other app will: which accounts pay you badly, which customers are about to leave, and how much work your existing customers already need and were never offered.
+    </p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#how" data-en="See how it works" data-es="Ver como funciona">See how it works</a>
+      <a class="btn btn-ghost" href="#truth" data-en="The numbers" data-es="Los numeros">The numbers</a>
     </div>
+    <p class="note" data-en="English or Spanish. The crew hears the job out loud — they never have to read your software."
+       data-es="Ingles o espanol. La cuadrilla escucha el trabajo en voz alta — nunca tienen que leer tu software.">
+      English or Spanish. The crew hears the job out loud — they never have to read your software.
+    </p>
   </div>
-</header>
 
-<section class="hero">
-  <span class="blob a"></span><span class="blob b"></span>
-  <div class="wrap hero-grid">
-    <div class="reveal in">
-      <span class="eyebrow" data-en="Built for landscaping crews" data-es="Hecho para cuadrillas de jardinería">Built for landscaping crews</span>
-      <h1 style="margin-top:18px" data-en="Run your whole lawn care business from your phone." data-es="Maneja todo tu negocio de jardinería desde el teléfono.">Run your whole lawn care business <span class="hl">from your phone.</span></h1>
-      <p class="lead" data-en="Leads, quotes, crews, job photos, and collections — in one bilingual app built for the field. Win the work, run the crew, get paid." data-es="Prospectos, cotizaciones, cuadrillas, fotos de trabajos y cobranza — en una app bilingüe hecha para el campo. Gana el trabajo, maneja la cuadrilla, cobra.">Leads, quotes, crews, job photos, and collections — in one bilingual app built for the field. Win the work, run the crew, get paid.</p>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#cta" data-en="Download on the App Store" data-es="Descargar en el App Store">Download on the App Store</a>
-        <a class="btn btn-ghost" href="#how" data-en="See how it works" data-es="Ver cómo funciona">See how it works</a>
-      </div>
-      <div class="hero-trust">
-        <span data-en="✔ Español & English" data-es="✔ Español e inglés">✔ Español &amp; English</span>
-        <span class="dot"></span>
-        <span data-en="✔ Works offline in the field" data-es="✔ Funciona sin señal">✔ Works offline in the field</span>
-        <span class="dot"></span>
-        <span data-en="✔ WhatsApp-ready" data-es="✔ Listo para WhatsApp">✔ WhatsApp-ready</span>
-      </div>
-    </div>
-    <div class="reveal in" style="position:relative">
-      <div class="float-chip fc1"><span class="ico" style="background:var(--g500)">📋</span><span data-en="Leads → Won" data-es="Prospecto → Ganado">Leads → Won</span></div>
-      <div class="float-chip fc2"><span class="ico" style="background:var(--amber);color:#5a3d00">📸</span><span data-en="Before / after" data-es="Antes / después">Before / after</span></div>
-      <div class="float-chip fc3"><span class="ico" style="background:var(--g700)">💵</span><span data-en="Get paid" data-es="Cobra">Get paid</span></div>
-      <div class="phone">
-        <div class="notch"></div>
-        <div class="screen">
-          <div class="ph-top">
-            <div class="h" data-en="Good morning" data-es="Buenos días">Good morning</div>
-            <div class="s" data-en="Tuesday · 4 jobs today" data-es="Martes · 4 trabajos hoy">Tuesday · 4 jobs today</div>
-          </div>
-          <div class="ph-body">
-            <div class="stat-row">
-              <div class="stat-mini"><div class="n">4</div><div class="l" data-en="Jobs today" data-es="Trabajos hoy">Jobs today</div></div>
-              <div class="stat-mini"><div class="n">$1,840</div><div class="l" data-en="Revenue" data-es="Ingresos">Revenue</div></div>
-              <div class="stat-mini"><div class="n">$620</div><div class="l" data-en="Pending" data-es="Pendiente">Pending</div></div>
-            </div>
-            <div class="ph-card"><div class="row"><div><div class="t">Casa Garza</div><div class="m" data-en="Maintenance · Crew A · 9:00" data-es="Mantenimiento · Cuadrilla A · 9:00">Maintenance · Crew A · 9:00</div></div><span class="pill g" data-en="En route" data-es="En ruta">En route</span></div></div>
-            <div class="ph-card"><div class="row"><div><div class="t">Villa Roble</div><div class="m" data-en="Pruning · Crew A · 11:30" data-es="Poda · Cuadrilla A · 11:30">Pruning · Crew A · 11:30</div></div><span class="pill a" data-en="In progress" data-es="En proceso">In progress</span></div></div>
-          </div>
-          <div class="ph-tabs">
-            <span class="on"><span class="ic"></span><span data-en="Today" data-es="Hoy">Today</span></span>
-            <span><span class="ic"></span><span data-en="Jobs" data-es="Trabajos">Jobs</span></span>
-            <span><span class="ic"></span><span data-en="Quote" data-es="Cotizar">Quote</span></span>
-            <span><span class="ic"></span><span data-en="Leads" data-es="Leads">Leads</span></span>
-            <span><span class="ic"></span><span data-en="Pay" data-es="Cobro">Pay</span></span>
-          </div>
+  <section id="truth">
+    <div class="truth">
+      <h2 data-en="A $95 lawn can pay worse than a $60 one." data-es="Un jardin de $95 puede pagar peor que uno de $60.">A $95 lawn can pay worse than a $60 one.</h2>
+      <p class="lede"
+         data-en="You feel busy and broke and can't say why. Cuadrilla times the job with a real clock, subtracts your labor, your materials and your fuel, and ranks every account by what it actually pays per crew-hour."
+         data-es="Te sientes ocupado y sin dinero y no sabes por que. Cuadrilla mide el trabajo con reloj real, resta tu mano de obra, tu material y tu gasolina, y ordena cada cuenta por lo que de verdad te paga por hora-cuadrilla.">
+        You feel busy and broke and can't say why. Cuadrilla times the job with a real clock, subtracts your labor, your materials and your fuel, and ranks every account by what it actually pays per crew-hour.
+      </p>
+      <div class="numbers">
+        <div class="num">
+          <div class="big">$56<span style="font-size:16px">/hr</span></div>
+          <div class="cap" data-en="What a 14,000 sq ft lawn at $95 really pays you, once the crew's real hours are counted."
+               data-es="Lo que de verdad te paga un jardin de 14,000 pies a $95, contando las horas reales de la cuadrilla.">
+            What a 14,000 sq ft lawn at $95 really pays you, once the crew's real hours are counted.</div>
+        </div>
+        <div class="num">
+          <div class="big">$114</div>
+          <div class="cap" data-en="What that same job should cost to hit a $60/crew-hour target. One tap texts them the new price."
+               data-es="Lo que deberia costar ese mismo trabajo para llegar a $60/hora-cuadrilla. Un toque le manda el precio nuevo.">
+            What that same job should cost. One tap texts them the new price.</div>
+        </div>
+        <div class="num">
+          <div class="big">16%</div>
+          <div class="cap" data-en="How much you overbill by forgetting to subtract the driveway. Cuadrilla cuts it out of the measurement."
+               data-es="Cuanto cobras de mas por olvidar restar la entrada. Cuadrilla la quita de la medicion.">
+            How much you overbill by forgetting to subtract the driveway. Cuadrilla cuts it out.</div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="problem" id="problem">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" data-en="What's slowing you down" data-es="Lo que te frena">What's slowing you down</span>
-      <h2 data-en="The work is hard enough. The office shouldn't be." data-es="El trabajo ya es pesado. La oficina no debería serlo.">The work is hard enough. The office shouldn't be.</h2>
-      <p data-en="Most crews run on notebooks, memory, and a messy WhatsApp. That loses leads, jobs, and money." data-es="La mayoría de las cuadrillas trabajan con libretas, memoria y un WhatsApp desordenado. Eso pierde prospectos, trabajos y dinero.">Most crews run on notebooks, memory, and a messy WhatsApp. That loses leads, jobs, and money.</p>
-    </div>
-    <div class="pain-grid">
-      <div class="pain reveal"><div class="ic">📇</div><h3 data-en="Leads slip away" data-es="Se pierden prospectos">Leads slip away</h3><p data-en="No follow-up system. A lead texts, you forget, and they hire the crew that answered first." data-es="Sin seguimiento. Un prospecto escribe, se te olvida, y contratan a quien contestó primero.">No follow-up system. A lead texts, you forget, and they hire the crew that answered first.</p></div>
-      <div class="pain reveal"><div class="ic">🧮</div><h3 data-en="Quotes take forever" data-es="Cotizar tarda mucho">Quotes take forever</h3><p data-en="Guessing prices on the spot or doing math at home — and losing the client to someone faster." data-es="Adivinas precios o haces cuentas en casa — y pierdes al cliente con alguien más rápido.">Guessing prices on the spot or doing math at home — and losing the client to someone faster.</p></div>
-      <div class="pain reveal"><div class="ic">📷</div><h3 data-en="No proof of work" data-es="Sin prueba del trabajo">No proof of work</h3><p data-en="Before/after photos scattered across phones. When a client disputes, you can't show what you did." data-es="Fotos de antes y después perdidas en varios teléfonos. Si el cliente reclama, no puedes probar tu trabajo.">Before/after photos scattered across phones. When a client disputes, you can't show what you did.</p></div>
-      <div class="pain reveal"><div class="ic">🧾</div><h3 data-en="Chasing payments" data-es="Persiguiendo pagos">Chasing payments</h3><p data-en="Who paid? Who's overdue? Balances tracked in your head until one slips and you eat the loss." data-es="¿Quién pagó? ¿Quién está vencido? Saldos en tu cabeza hasta que uno se escapa y pierdes.">Who paid? Who's overdue? Balances tracked in your head until one slips and you eat the loss.</p></div>
-    </div>
-  </div>
-</section>
+  <section id="how">
+    <h2 data-en="Lead to paid, in your pocket" data-es="Del prospecto al pago, en tu bolsillo">Lead to paid, in your pocket</h2>
+    <p class="lede" data-en="Five minutes to set up. Then it works the way you already work."
+       data-es="Cinco minutos para configurar. Despues funciona como ya trabajas.">Five minutes to set up. Then it works the way you already work.</p>
 
-<section id="how">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" data-en="How it works" data-es="Cómo funciona">How it works</span>
-      <h2 data-en="Lead to paid — the whole job, in your pocket." data-es="Del prospecto al pago — todo el trabajo, en tu bolsillo.">Lead to paid — the whole job, in your pocket.</h2>
-      <p data-en="Four steps that used to live in a notebook, three chats, and your memory." data-es="Cuatro pasos que vivían en una libreta, tres chats y tu memoria.">Four steps that used to live in a notebook, three chats, and your memory.</p>
-    </div>
+    <div class="steps">
+      <div class="step"><div class="n"></div><div>
+        <h3 data-en="Quote a yard without walking it" data-es="Cotiza sin caminar el jardin">Quote a yard without walking it</h3>
+        <p data-en="Type the address. Trace the grass on satellite with your finger. Switch to Cut out and trace the driveway and walkways so you never charge for concrete. The price fills itself in — real square footage, real math."
+           data-es="Escribe la direccion. Traza el pasto en el satelite con el dedo. Cambia a Quitar y traza la entrada y las banquetas para nunca cobrar concreto. El precio se llena solo — pies cuadrados reales, matematicas reales.">
+          Type the address. Trace the grass on satellite. Cut out the driveway and walkways so you never charge for concrete. The price fills itself in.</p>
+      </div></div>
 
-    <div class="step reveal">
-      <div>
-        <div class="step-num">1</div>
-        <h3 data-en="Track leads and build the quote" data-es="Sigue prospectos y arma la cotización">Track leads and build the quote</h3>
-        <p data-en="Every lead moves through a simple pipeline — New, Site visit, Proposal, Won. Build a priced quote by service, area, frequency and extras, and send it on WhatsApp with deposit and monthly plan." data-es="Cada prospecto avanza por un embudo simple — Nuevo, Visita, Propuesta, Ganado. Arma una cotización con precio por servicio, área, frecuencia y extras, y envíala por WhatsApp con anticipo y plan mensual.">Every lead moves through a simple pipeline — New, Site visit, Proposal, Won. Build a priced quote by service, area, frequency and extras, and send it on WhatsApp with deposit and monthly plan.</p>
-        <ul>
-          <li data-en="Lead pipeline with next-step reminders" data-es="Embudo de prospectos con recordatorios">Lead pipeline with next-step reminders</li>
-          <li data-en="Quote by service, sq ft, frequency + extras" data-es="Cotiza por servicio, m², frecuencia y extras">Quote by service, sq ft, frequency + extras</li>
-          <li data-en="Auto-calculated total, deposit & monthly plan" data-es="Total, anticipo y plan mensual automáticos">Auto-calculated total, deposit &amp; monthly plan</li>
-        </ul>
+      <div class="step"><div class="n"></div><div>
+        <h3 data-en="Send the crew — they never read a word" data-es="Manda la cuadrilla — no leen ni una palabra">Send the crew — they never read a word</h3>
+        <p data-en="The phone reads the whole job card out loud in Spanish: address, service, what to bring, what to collect, don't forget the photos. Gloves on, engine running, phone in a pocket."
+           data-es="El telefono lee toda la tarjeta en voz alta en espanol: direccion, servicio, que llevar, cuanto cobrar, no olvides las fotos. Con guantes puestos, motor prendido, telefono en la bolsa.">
+          The phone reads the whole job card out loud in Spanish. Gloves on, engine running, phone in a pocket.</p>
+      </div></div>
+
+      <div class="step"><div class="n"></div><div>
+        <h3 data-en="Start the clock. Take the photos." data-es="Arranca el reloj. Toma las fotos.">Start the clock. Take the photos.</h3>
+        <p data-en="Start work starts a real timer. Before photo, work, after photo, Finish. Those two timestamps turn your profit report from a guess into a measurement — and the photos end the 'you never came' argument before it starts."
+           data-es="Empezar arranca un reloj real. Foto de antes, trabajo, foto de despues, Terminar. Esas dos horas convierten tu reporte de ganancia de una adivinanza en una medicion — y las fotos acaban con el 'nunca vinieron' antes de que empiece.">
+          Start work starts a real timer. Before photo, work, after photo, Finish. Those timestamps turn the profit report from a guess into a measurement.</p>
+      </div></div>
+
+      <div class="step"><div class="n"></div><div>
+        <h3 data-en="Collect what you're owed" data-es="Cobra lo que te deben">Collect what you're owed</h3>
+        <p data-en="Every finished job nobody paid for, oldest first, red past a week. One tap texts a reminder. One tap marks it paid. And when it rains, one tap slides the whole day to tomorrow and tells every customer."
+           data-es="Cada trabajo terminado que no te pagaron, del mas viejo primero, en rojo despues de una semana. Un toque manda recordatorio. Un toque lo marca pagado. Y cuando llueve, un toque pasa todo el dia a manana y le avisa a cada cliente.">
+          Every finished job nobody paid for, oldest first, red past a week. One tap reminds, one tap marks it paid. When it rains, one tap moves the whole day.</p>
+      </div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-en="What no other app tells you" data-es="Lo que ninguna otra app te dice">What no other app tells you</h2>
+    <p class="lede" data-en="This is the part that changes how you run the business."
+       data-es="Esta es la parte que cambia como manejas el negocio.">This is the part that changes how you run the business.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="ico">📉</div>
+        <div class="kicker" data-en="Profit" data-es="Ganancia">Profit</div>
+        <h3 data-en="Which accounts pay you badly" data-es="Que cuentas te pagan mal">Which accounts pay you badly</h3>
+        <p data-en="Ranked worst first, using the crew's real clock, your real labor rate, and the materials you actually bought. It tells you what each job should cost — and texts the customer the new price."
+           data-es="Ordenadas de peor a mejor, con el reloj real de la cuadrilla, tu costo real de mano de obra y el material que de verdad compraste. Te dice cuanto deberia costar cada trabajo — y le manda el precio nuevo al cliente.">
+          Ranked worst first, using the crew's real clock and your real costs. It tells you what each job should cost — and texts the customer the new price.</p>
       </div>
-      <div class="step-media">
-        <div class="phone" style="width:250px"><div class="notch"></div><div class="screen">
-          <div class="ph-top"><div class="h" data-en="New quote" data-es="Nueva cotización">New quote</div><div class="s">Casa Garza</div></div>
-          <div class="ph-body">
-            <div class="ph-card"><div class="m" data-en="Service" data-es="Servicio">Service</div><div class="t" data-en="Lawn mowing · Weekly" data-es="Corte de césped · Semanal">Lawn mowing · Weekly</div></div>
-            <div class="ph-card"><div class="m" data-en="Area · Extras" data-es="Área · Extras">Area · Extras</div><div class="t" data-en="3,400 sq ft · Edging, Weed control" data-es="3,400 ft² · Bordeado, Control de maleza">3,400 sq ft · Edging, Weed control</div></div>
-            <div class="ph-card"><div class="row"><span class="t" data-en="Total estimate" data-es="Total estimado">Total estimate</span><span class="t" style="color:var(--g600)">$180 / wk</span></div><div class="m" data-en="Deposit $90 · sent on WhatsApp" data-es="Anticipo $90 · enviado por WhatsApp">Deposit $90 · sent on WhatsApp</div></div>
-          </div>
-        </div></div>
-      </div>
-    </div>
 
-    <div class="step reveal">
-      <div>
-        <div class="step-num">2</div>
-        <h3 data-en="Schedule crews and recurring visits" data-es="Programa cuadrillas y visitas periódicas">Schedule crews and recurring visits</h3>
-        <p data-en="Assign crews, set weekly, biweekly or monthly recurring plans, and see today in order. No double-booking, no forgotten weekly clients." data-es="Asigna cuadrillas, programa planes semanales, quincenales o mensuales y ve el día en orden. Sin encimes ni clientes semanales olvidados.">Assign crews, set weekly, biweekly or monthly recurring plans, and see today in order. No double-booking, no forgotten weekly clients.</p>
-        <ul>
-          <li data-en="Recurring plans (weekly / biweekly / monthly)" data-es="Planes periódicos (semanal / quincenal / mensual)">Recurring plans (weekly / biweekly / monthly)</li>
-          <li data-en="Assign and color-code multiple crews" data-es="Asigna y colorea varias cuadrillas">Assign and color-code multiple crews</li>
-          <li data-en="Today view with route and times" data-es="Vista de Hoy con ruta y horarios">Today view with route and times</li>
-        </ul>
+      <div class="card">
+        <div class="ico">🚪</div>
+        <div class="kicker" data-en="Churn" data-es="Fuga">Churn</div>
+        <h3 data-en="Who's about to leave" data-es="Quien se te va a ir">Who's about to leave</h3>
+        <p data-en="Nobody calls to quit. They just stop appearing on the schedule. A recurring customer with no next visit booked is the loudest silent signal there is — and nothing else is watching for it."
+           data-es="Nadie llama para renunciar. Nomas dejan de aparecer en la agenda. Un cliente recurrente sin proxima visita agendada es la senal mas fuerte que hay — y nada mas la esta buscando.">
+          Nobody calls to quit. They just stop appearing on the schedule. A recurring customer with no next visit booked is the loudest silent signal there is.</p>
       </div>
-      <div class="step-media">
-        <div class="phone" style="width:250px"><div class="notch"></div><div class="screen">
-          <div class="ph-top"><div class="h" data-en="Schedule" data-es="Agenda">Schedule</div><div class="s" data-en="Tuesday · 2 crews" data-es="Martes · 2 cuadrillas">Tuesday · 2 crews</div></div>
-          <div class="ph-body">
-            <div class="ph-card"><div class="row"><div class="t">9:00 · Casa Garza</div><span class="pill g" data-en="Crew A" data-es="Cuadrilla A">Crew A</span></div></div>
-            <div class="ph-card"><div class="row"><div class="t">11:30 · Villa Roble</div><span class="pill g" data-en="Crew A" data-es="Cuadrilla A">Crew A</span></div></div>
-            <div class="ph-card"><div class="row"><div class="t">14:00 · Jardín Sol</div><span class="pill b" data-en="Crew B" data-es="Cuadrilla B">Crew B</span></div></div>
-            <div class="ph-card" style="background:var(--leaf);border-color:#cfe6b8"><div class="m" style="color:var(--g700)" data-en="🔁 3 recurring visits auto-added" data-es="🔁 3 visitas periódicas agregadas">🔁 3 recurring visits auto-added</div></div>
-          </div>
-        </div></div>
+
+      <div class="card">
+        <div class="ico">💰</div>
+        <div class="kicker" data-en="Untapped" data-es="Sin vender">Untapped</div>
+        <h3 data-en="Money already in your book" data-es="Dinero que ya esta en tu libro">Money already in your book</h3>
+        <p data-en="Every mowing customer also needs aeration, mulch, fertilizer, leaf cleanup. Cuadrilla knows their exact square footage, so it prices the offer precisely and gives you a button that texts it. You're buying leads for strangers while this sits there."
+           data-es="Todo cliente de corte tambien necesita aireacion, mulch, fertilizante, retiro de hojas. Cuadrilla sabe sus pies cuadrados exactos, asi que pone el precio exacto y te da un boton para mandarlo. Estas comprando prospectos desconocidos mientras esto esta ahi parado.">
+          Every mowing customer also needs aeration, mulch, fertilizer, leaf cleanup. It knows their square footage, prices the offer exactly, and gives you a button that texts it.</p>
       </div>
     </div>
+  </section>
 
-    <div class="step reveal">
-      <div>
-        <div class="step-num">3</div>
-        <h3 data-en="Run the job with proof" data-es="Ejecuta el trabajo con evidencia">Run the job with proof</h3>
-        <p data-en="Each job has line items, an assigned crew, a checklist, and before/after photos. Advance the status from en route to completed — everything tied to the customer and property." data-es="Cada trabajo tiene partidas, cuadrilla asignada, lista de verificación y fotos de antes y después. Avanza el estado de en ruta a completado — todo ligado al cliente y la propiedad.">Each job has line items, an assigned crew, a checklist, and before/after photos. Advance the status from en route to completed — everything tied to the customer and property.</p>
-        <ul>
-          <li data-en="Line items, crew, and job checklist" data-es="Partidas, cuadrilla y lista de verificación">Line items, crew, and job checklist</li>
-          <li data-en="Before / after photos as proof" data-es="Fotos de antes / después como prueba">Before / after photos as proof</li>
-          <li data-en="Status: en route → in progress → done" data-es="Estado: en ruta → en proceso → hecho">Status: en route → in progress → done</li>
-        </ul>
-      </div>
-      <div class="step-media">
-        <div class="phone" style="width:250px"><div class="notch"></div><div class="screen">
-          <div class="ph-top"><div class="h">Villa Roble</div><div class="s" data-en="Pruning · Crew A" data-es="Poda · Cuadrilla A">Pruning · Crew A</div></div>
-          <div class="ph-body">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <div style="aspect-ratio:1;border-radius:12px;background:linear-gradient(160deg,#8aa17a,#5c7a4a);display:grid;place-items:end center;color:#fff;font-size:9px;font-weight:700;padding:6px" data-en="BEFORE" data-es="ANTES">BEFORE</div>
-              <div style="aspect-ratio:1;border-radius:12px;background:linear-gradient(160deg,#4fbf76,#1f7a3d);display:grid;place-items:end center;color:#fff;font-size:9px;font-weight:700;padding:6px" data-en="AFTER" data-es="DESPUÉS">AFTER</div>
-            </div>
-            <div class="ph-card"><div class="row"><span class="t" data-en="Line total" data-es="Total partidas">Line total</span><span class="t" style="color:var(--g600)">$240</span></div><div class="m" data-en="✅ Checklist 4/5 · status: In progress" data-es="✅ Lista 4/5 · estado: En proceso">✅ Checklist 4/5 · status: In progress</div></div>
-          </div>
-        </div></div>
+  <section>
+    <h2 data-en="Customers find you while you're mowing" data-es="Los clientes te encuentran mientras cortas">Customers find you while you're mowing</h2>
+    <p class="lede"
+       data-en="Turn on your quote link and you get a QR code. Put it on the truck, a yard sign, a Facebook post. A homeowner scans it, fills out a short form, and lands in your Leads with a Call button already on it. No phone number to buy. No per-message fee. Free."
+       data-es="Activa tu liga y te dan un codigo QR. Ponlo en la troca, en un letrero, en Facebook. El cliente lo escanea, llena un formulario corto y cae en tus Prospectos con boton de Llamar. Sin comprar numero. Sin cobro por mensaje. Gratis.">
+      Turn on your quote link and you get a QR code. Put it on the truck, a yard sign, a Facebook post. A homeowner scans it, fills out a short form, and lands in your Leads with a Call button already on it. Free.
+    </p>
+  </section>
+
+  <section>
+    <div class="spanish">
+      <h2 data-en="Built for a crew that works in Spanish" data-es="Hecho para una cuadrilla que trabaja en espanol">Built for a crew that works in Spanish</h2>
+      <p data-en="The owner runs the whole business in whichever language he thinks in — quoting, pricing, scheduling, collections. The crew hears the job spoken in Spanish and never has to read a screen. Speak a note in one language; send it in the other."
+         data-es="El dueno maneja todo el negocio en el idioma que piensa — cotizar, poner precio, agendar, cobrar. La cuadrilla escucha el trabajo hablado en espanol y nunca tiene que leer una pantalla. Dicta una nota en un idioma; mandala en el otro.">
+        The owner runs the whole business in whichever language he thinks in. The crew hears the job spoken in Spanish and never has to read a screen.
+      </p>
+      <div class="quote-es">
+        “Trabajo a las 9:00. Cliente Maria Lopez. Direccion: 1420 Oak Street. Servicio: corte y mantenimiento. Ojo: perro en el patio. Cobrar $95 en efectivo. No olvides las fotos de antes y despues.”
       </div>
     </div>
+  </section>
 
-    <div class="step reveal">
-      <div>
-        <div class="step-num">4</div>
-        <h3 data-en="Collect and get paid" data-es="Cobra y recibe tu pago">Collect and get paid</h3>
-        <p data-en="See outstanding and overdue balances at a glance. Record a payment by cash, card, transfer, check, Venmo or Zelle, and send a friendly reminder in one tap." data-es="Ve saldos pendientes y vencidos de un vistazo. Registra pagos en efectivo, tarjeta, transferencia, cheque, Venmo o Zelle, y manda un recordatorio con un toque.">See outstanding and overdue balances at a glance. Record a payment by cash, card, transfer, check, Venmo or Zelle, and send a friendly reminder in one tap.</p>
-        <ul>
-          <li data-en="Outstanding & overdue at a glance" data-es="Pendiente y vencido de un vistazo">Outstanding &amp; overdue at a glance</li>
-          <li data-en="Record cash, card, transfer, Venmo, Zelle" data-es="Registra efectivo, tarjeta, transferencia, Venmo, Zelle">Record cash, card, transfer, Venmo, Zelle</li>
-          <li data-en="One-tap payment reminders" data-es="Recordatorios de pago con un toque">One-tap payment reminders</li>
-        </ul>
-      </div>
-      <div class="step-media">
-        <div class="phone" style="width:250px"><div class="notch"></div><div class="screen">
-          <div class="ph-top"><div class="h" data-en="Collections" data-es="Cobranza">Collections</div><div class="s" data-en="This week" data-es="Esta semana">This week</div></div>
-          <div class="ph-body">
-            <div class="stat-row">
-              <div class="stat-mini"><div class="n">$3,360</div><div class="l" data-en="Outstanding" data-es="Pendiente">Outstanding</div></div>
-              <div class="stat-mini"><div class="n">$820</div><div class="l" data-en="Overdue" data-es="Vencido">Overdue</div></div>
-            </div>
-            <div class="ph-card"><div class="row"><div><div class="t">Casa Garza</div><div class="m" data-en="Balance $180 · Venmo" data-es="Saldo $180 · Venmo">Balance $180 · Venmo</div></div><span class="pill a" data-en="Remind" data-es="Recordar">Remind</span></div></div>
-            <div class="ph-card"><div class="row"><div><div class="t">Jardín Sol</div><div class="m" data-en="Paid · Card" data-es="Pagado · Tarjeta">Paid · Card</div></div><span class="pill g">✓</span></div></div>
-          </div>
-        </div></div>
-      </div>
+  <section>
+    <h2 data-en="What it can't do" data-es="Lo que NO puede hacer">What it can't do</h2>
+    <div class="honest">
+      <h3 data-en="Satellite photos are old. Sometimes your customer's house isn't in them."
+          data-es="Las fotos de satelite son viejas. A veces la casa de tu cliente no sale.">
+        Satellite photos are old. Sometimes your customer's house isn't in them.</h3>
+      <p data-en="Every free basemap is a photograph from a past flyover — not a live picture. In a brand-new subdivision the plane flew when the lot was still dirt. Cuadrilla gives you four imagery sources (Apple, Esri, Clarity, USGS) because they fly on different dates, plus a hand-measure mode for when none of them show the house. We would rather tell you that than pretend."
+         data-es="Todo mapa gratis es una foto de un vuelo pasado — no una imagen en vivo. En un fraccionamiento nuevo el avion volo cuando el lote era tierra. Cuadrilla te da cuatro fuentes (Apple, Esri, Clarity, USGS) porque vuelan en fechas distintas, y un modo para medir a mano cuando ninguna muestra la casa. Preferimos decirtelo que fingir.">
+        Every free basemap is a photograph from a past flyover — not a live picture. In a brand-new subdivision the plane flew when the lot was still dirt. Cuadrilla gives you four imagery sources because they fly on different dates, plus a hand-measure mode for when none of them show the house. We would rather tell you that than pretend.</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="features" id="features">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#dff2e6" data-en="Everything in one app" data-es="Todo en una app">Everything in one app</span>
-      <h2 data-en="One place for the whole operation" data-es="Un solo lugar para toda la operación">One place for the whole operation</h2>
-      <p data-en="The tools that used to live in your head, a notebook, and three chats." data-es="Las herramientas que vivían en tu cabeza, una libreta y tres chats.">The tools that used to live in your head, a notebook, and three chats.</p>
-    </div>
-    <div class="feat-grid">
-      <div class="feat reveal"><div class="ic">🏠</div><h3 data-en="Today dashboard" data-es="Panel de Hoy">Today dashboard</h3><p data-en="Jobs today, revenue, and pending payments — plus route, WhatsApp and call in one tap." data-es="Trabajos de hoy, ingresos y pagos pendientes — más ruta, WhatsApp y llamada con un toque.">Jobs today, revenue, and pending payments — plus route, WhatsApp and call in one tap.</p></div>
-      <div class="feat reveal"><div class="ic">📋</div><h3 data-en="Leads pipeline" data-es="Embudo de prospectos">Leads pipeline</h3><p data-en="New → Site visit → Proposal → Won, with pipeline value and next steps." data-es="Nuevo → Visita → Propuesta → Ganado, con valor del embudo y próximos pasos.">New → Site visit → Proposal → Won, with pipeline value and next steps.</p></div>
-      <div class="feat reveal"><div class="ic">✍️</div><h3 data-en="Quotes" data-es="Cotizaciones">Quotes</h3><p data-en="Priced by service, area, frequency and extras — WhatsApp-ready with deposit." data-es="Con precio por servicio, área, frecuencia y extras — listo para WhatsApp con anticipo.">Priced by service, area, frequency and extras — WhatsApp-ready with deposit.</p></div>
-      <div class="feat reveal"><div class="ic">📸</div><h3 data-en="Jobs" data-es="Trabajos">Jobs</h3><p data-en="Line items, crews, checklists, before/after photos, and status tracking." data-es="Partidas, cuadrillas, listas, fotos de antes/después y seguimiento de estado.">Line items, crews, checklists, before/after photos, and status tracking.</p></div>
-      <div class="feat reveal"><div class="ic">📅</div><h3 data-en="Schedule" data-es="Agenda">Schedule</h3><p data-en="Assign crews and set recurring weekly, biweekly or monthly plans." data-es="Asigna cuadrillas y programa planes semanales, quincenales o mensuales.">Assign crews and set recurring weekly, biweekly or monthly plans.</p></div>
-      <div class="feat reveal"><div class="ic">💳</div><h3 data-en="Collections" data-es="Cobranza">Collections</h3><p data-en="Outstanding, overdue, reminders, and payments by cash, card, Venmo or Zelle." data-es="Pendiente, vencido, recordatorios y pagos en efectivo, tarjeta, Venmo o Zelle.">Outstanding, overdue, reminders, and payments by cash, card, Venmo or Zelle.</p></div>
-    </div>
-  </div>
-</section>
-
-<section class="grow" id="grow">
-  <div class="wrap">
-    <div class="sec-head reveal">
-      <span class="eyebrow" data-en="Grow your business" data-es="Haz crecer tu negocio">Grow your business</span>
-      <h2 data-en="Win more. Prove more. Keep more." data-es="Gana más. Prueba más. Conserva más.">Win more. Prove more. Keep more.</h2>
-      <p data-en="Crews that follow up on leads, quote fast, and never miss a payment are the ones that grow." data-es="Las cuadrillas que dan seguimiento, cotizan rápido y no pierden un pago son las que crecen.">Crews that follow up on leads, quote fast, and never miss a payment are the ones that grow.</p>
-    </div>
-    <div class="stat-grid">
-      <div class="stat reveal"><div class="n" data-en="Every lead" data-es="Cada prospecto">Every lead</div><div class="l" data-en="tracked from first text to Won — so you stop losing jobs to whoever answered first." data-es="seguido del primer mensaje a Ganado — para dejar de perder trabajos con quien contestó primero.">tracked from first text to Won — so you stop losing jobs to whoever answered first.</div></div>
-      <div class="stat reveal"><div class="n" data-en="0 lost" data-es="0 perdidos">0 lost</div><div class="l" data-en="Payments, photo proof, and balances tracked — no job unpaid, no dispute unanswered." data-es="Pagos, evidencia y saldos registrados — ningún trabajo sin pagar, ningún reclamo sin respuesta.">Payments, photo proof, and balances tracked — no job unpaid, no dispute unanswered.</div></div>
-      <div class="stat reveal"><div class="n" data-en="2 languages" data-es="2 idiomas">2 languages</div><div class="l" data-en="Serve English and Spanish clients without rewriting a thing — you look like the professional crew." data-es="Atiende clientes en inglés y español sin reescribir nada — te ves como la cuadrilla profesional.">Serve English and Spanish clients without rewriting a thing — you look like the professional crew.</div></div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="bili reveal">
-      <div>
-        <span class="eyebrow" style="background:rgba(255,255,255,.16);color:#fff" data-en="Español ⇄ English" data-es="Español ⇄ English">Español ⇄ English</span>
-        <h2 style="margin-top:16px" data-en="Work in Spanish. Send in English." data-es="Trabaja en español. Envía en inglés.">Work in Spanish. Send in English.</h2>
-        <p data-en="Run the app in the language you think in, and send quotes and reminders in the client's language — instantly, no translating by hand." data-es="Usa la app en el idioma en que piensas, y envía cotizaciones y recordatorios en el idioma del cliente — al instante, sin traducir a mano.">Run the app in the language you think in, and send quotes and reminders in the client's language — instantly, no translating by hand.</p>
-      </div>
-      <div>
-        <div class="demo-bubble"><strong>ES</strong> — “Corte semanal, 3,400 ft². Total $180/sem, anticipo $90.”</div>
-        <div class="demo-bubble"><strong>EN</strong> — “Weekly mowing, 3,400 sq ft. Total $180/wk, deposit $90.”</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="cta" id="cta">
-  <div class="wrap">
-    <div class="cta-box reveal">
-      <span class="blob a"></span><span class="blob b"></span>
-      <h2 data-en="Put the whole business in your pocket." data-es="Pon todo el negocio en tu bolsillo.">Put the whole business in your pocket.</h2>
-      <p data-en="Track leads, quote fast, prove your work, and get paid — starting today. Español &amp; English." data-es="Sigue prospectos, cotiza rápido, prueba tu trabajo y cobra — desde hoy. Español e inglés.">Track leads, quote fast, prove your work, and get paid — starting today. Español &amp; English.</p>
-      <a class="btn btn-primary" href="#" data-en="Download on the App Store" data-es="Descargar en el App Store">Download on the App Store</a>
-    </div>
-  </div>
-</section>
-
-<footer>
-  <div class="wrap">
-    <div class="brand"><span class="mark"><svg class="leaf-svg" viewBox="0 0 24 24" fill="none"><path d="M12 21c6-2 8-8 8-15-7 0-13 3-13 10 0 2 .6 3.6 1.4 4.7L6 21" stroke="#e8f5d8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Cuadrilla</div>
-    <div data-en="Field-service software for landscaping crews. Español &amp; English." data-es="Software de campo para cuadrillas de jardinería. Español e inglés.">Field-service software for landscaping crews. Español &amp; English.</div>
-    <div style="margin-top:8px;font-size:12.5px;opacity:.7">© 2026 Cuadrilla</div>
-  </div>
-</footer>
+  <footer>
+    <div class="brand" style="margin-bottom:10px"><span class="mark">🌿</span> Cuadrilla</div>
+    <p data-en="Run the crew. Know the numbers. Keep the money."
+       data-es="Maneja la cuadrilla. Conoce los numeros. Quedate con el dinero.">
+      Run the crew. Know the numbers. Keep the money.</p>
+  </footer>
+</div>
 
 <script>
-  const setLang = (lang) => {
+  function setLang(lang){
+    document.getElementById('btn-en').classList.toggle('on', lang === 'en');
+    document.getElementById('btn-es').classList.toggle('on', lang === 'es');
     document.documentElement.lang = lang;
-    document.querySelectorAll('[data-en]').forEach(el => {
-      const val = el.getAttribute('data-' + lang);
-      if (val != null) el.textContent = val;
+    document.querySelectorAll('[data-en]').forEach(function(el){
+      var v = el.getAttribute('data-' + lang);
+      if (v) el.innerHTML = v;
     });
-    document.querySelectorAll('.langtoggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
-  };
-  document.querySelectorAll('.langtoggle button').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  }
+  // Spanish speakers get Spanish without having to hunt for a toggle.
+  if ((navigator.language || '').toLowerCase().indexOf('es') === 0) setLang('es');
 </script>
 </body>
 </html>
